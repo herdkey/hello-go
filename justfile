@@ -1,5 +1,10 @@
+# ---- Tool binary location ----
+# Put Go tools in a repo-local .bin
+export GOBIN := justfile_directory() + "/.bin"
+export PATH := GOBIN + ":" + env_var('PATH')
+
 # Default recipe
-default: generate build test lint
+default: install-tools generate build test lint
 
 # Build the application
 build:
@@ -7,7 +12,7 @@ build:
 
 # Run tests
 test:
-    go test -v ./...
+    go test ./...
 
 # Run linter
 lint:
@@ -24,8 +29,11 @@ clean:
 
 # Install development tools
 install-tools:
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-    go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+    mkdir -p "$GOBIN"
+    @command -v golangci-lint >/dev/null 2>&1 \
+        || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    @command -v oapi-codegen >/dev/null 2>&1 \
+        || go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
 # Run the server
 run:

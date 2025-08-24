@@ -2,4 +2,7 @@
 /.idea/
 /.junie/
 
+# build artifact
 /bin/
+# tool binaries
+/.bin/
