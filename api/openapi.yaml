@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Hello Go API
+  description: A simple echo API for the hello-go project
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /healthz:
+    get:
+      summary: Health check endpoint
+      operationId: healthz
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /readyz:
+    get:
+      summary: Readiness check endpoint
+      operationId: readyz
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+  /v1/echo:
+    post:
+      summary: Echo endpoint
+      operationId: echo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EchoRequest'
+      responses:
+        '200':
+          description: Echo response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EchoResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    EchoRequest:
+      type: object
+      required:
+        - message
+        - author
+      properties:
+        message:
+          type: string
+          description: The message to echo
+        author:
+          type: string
+          description: The author of the message
+    EchoResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The echoed message
+        author:
+          type: string
+          description: The author of the message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
