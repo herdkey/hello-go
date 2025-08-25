@@ -1,0 +1,38 @@
+version: "2"
+
+run:
+  timeout: 1m
+  go: '1.24.6'
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+    goimports:
+      local-prefixes:
+        - github.com/herdkey/hello-go
+
+linters:
+  enable:
+    - govet
+    - staticcheck
+    - revive
+    - ineffassign
+    - errcheck
+    - unused
+  settings:
+    govet:
+      enable-all: true
+    staticcheck:
+      checks: ["all", "-ST1000"]
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+
+issues:
+  max-same-issues: 50
+  max-issues-per-linter: 50
