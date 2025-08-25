@@ -3,7 +3,7 @@ Scaffold a new Go project called `hello-go`.
 
 ## Requirements
 
-- **Go version:** 1.25.0 (`toolchain go1.25.0` in `go.mod`)
+- **Go version:** 1.24.6 (`toolchain go1.24.6` in `go.mod`)
 
 ### HTTP & API
 - Use `net/http` + `chi`.

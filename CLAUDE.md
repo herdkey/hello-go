@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a minimal Go project (`github.com/herdkey/hello-go`) using Go 1.25.0. The project currently contains only the basic module setup with no source code files yet.
+This is a minimal Go project (`github.com/herdkey/hello-go`) using Go 1.24.6. The project currently contains only the basic module setup with no source code files yet.
 
 ## Ignore Files
 
