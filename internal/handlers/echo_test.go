@@ -19,15 +19,15 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelError,
 	}))
-	
+
 	echoService := services.NewEchoService(logger)
 	handler := NewEchoHandler(echoService, logger)
 
 	tests := []struct {
-		name           string
 		requestBody    interface{}
-		expectedStatus int
+		name           string
 		expectedBody   string
+		expectedStatus int
 	}{
 		{
 			name: "successful echo",
@@ -74,7 +74,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var body bytes.Buffer
-			
+
 			if tt.requestBody == "invalid json" {
 				body.WriteString("invalid json")
 			} else {
@@ -84,22 +84,22 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/v1/echo", &body)
 			req.Header.Set("Content-Type", "application/json")
-			
+
 			w := httptest.NewRecorder()
-			
+
 			handler.PostV1Echo(w, req)
-			
+
 			assert.Equal(t, tt.expectedStatus, w.Code)
-			
+
 			if tt.expectedStatus == http.StatusOK {
 				var response services.EchoResponse
 				err := json.NewDecoder(w.Body).Decode(&response)
 				require.NoError(t, err)
-				
+
 				var expectedResponse services.EchoResponse
 				err = json.Unmarshal([]byte(tt.expectedBody), &expectedResponse)
 				require.NoError(t, err)
-				
+
 				assert.Equal(t, expectedResponse.Message, response.Message)
 				assert.Equal(t, expectedResponse.Author, response.Author)
 			} else {

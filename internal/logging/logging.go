@@ -10,7 +10,7 @@ import (
 
 func Setup(cfg config.LoggingConfig) *slog.Logger {
 	level := parseLevel(cfg.Level)
-	
+
 	var handler slog.Handler
 	opts := &slog.HandlerOptions{
 		Level: level,
@@ -25,7 +25,7 @@ func Setup(cfg config.LoggingConfig) *slog.Logger {
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
-	
+
 	return logger
 }
 

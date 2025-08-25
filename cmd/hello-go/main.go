@@ -22,7 +22,7 @@ func main() {
 }
 
 func newRootCommand() *cobra.Command {
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:   "hello-go",
 		Short: "A simple echo HTTP server",
 		Long:  "hello-go is a simple HTTP server with echo functionality built with Go",
@@ -43,7 +43,7 @@ func newServeCommand() *cobra.Command {
 }
 
 func runServe(cmd *cobra.Command, args []string) error {
-	ctx, cancel := signal.NotifyContext(context.Background(), 
+	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
@@ -68,7 +68,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 		}
 	case <-ctx.Done():
 		application.Logger.Info("Shutdown signal received")
-		
+
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
 

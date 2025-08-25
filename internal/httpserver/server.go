@@ -37,17 +37,17 @@ func New(cfg config.ServerConfig, router chi.Router, logger *slog.Logger) *Serve
 
 func (s *Server) Start() error {
 	s.logger.Info("Starting HTTP server", "addr", s.server.Addr)
-	
+
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("failed to start server: %w", err)
 	}
-	
+
 	return nil
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.logger.Info("Shutting down HTTP server")
-	
+
 	return s.server.Shutdown(ctx)
 }
 
@@ -62,7 +62,10 @@ func NewRouter() chi.Router {
 
 	r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-yaml")
-		w.Write(embedfs.OpenAPISpec)
+		_, e := w.Write(embedfs.OpenAPISpec)
+		if e != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 
 	return r
@@ -72,12 +75,18 @@ func AddHealthRoutes(r chi.Router) {
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		_, e := w.Write([]byte(`{"status":"ok"}`))
+		if e != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 
 	r.Get("/readyz", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ready"}`))
+		_, e := w.Write([]byte(`{"status":"ready"}`))
+		if e != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 }

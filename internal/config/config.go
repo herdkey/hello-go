@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	Server    ServerConfig    `mapstructure:"server"`
 	Logging   LoggingConfig   `mapstructure:"logging"`
 	Telemetry TelemetryConfig `mapstructure:"telemetry"`
+	Server    ServerConfig    `mapstructure:"server"`
 }
 
 type ServerConfig struct {
@@ -45,13 +45,13 @@ func Load() (*Config, error) {
 
 	v.SetEnvPrefix("APP")
 	v.AutomaticEnv()
-	
+
 	// Bind environment variables explicitly for nested keys
-	v.BindEnv("server.host", "APP_SERVER_HOST")
-	v.BindEnv("server.port", "APP_SERVER_PORT")
-	v.BindEnv("logging.level", "APP_LOGGING_LEVEL")
-	v.BindEnv("logging.format", "APP_LOGGING_FORMAT")
-	v.BindEnv("telemetry.enabled", "APP_TELEMETRY_ENABLED")
+	_ = v.BindEnv("server.host", "APP_SERVER_HOST")
+	_ = v.BindEnv("server.port", "APP_SERVER_PORT")
+	_ = v.BindEnv("logging.level", "APP_LOGGING_LEVEL")
+	_ = v.BindEnv("logging.format", "APP_LOGGING_FORMAT")
+	_ = v.BindEnv("telemetry.enabled", "APP_TELEMETRY_ENABLED")
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {

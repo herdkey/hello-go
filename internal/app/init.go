@@ -16,10 +16,10 @@ import (
 )
 
 type Application struct {
-	Server           *httpserver.Server
+	Server            *httpserver.Server
 	TelemetryProvider *telemetry.Provider
-	Config           *config.Config
-	Logger           *slog.Logger
+	Config            *config.Config
+	Logger            *slog.Logger
 }
 
 func Initialize(ctx context.Context) (*Application, error) {

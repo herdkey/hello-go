@@ -22,7 +22,7 @@ func NewEchoHandler(echoService *services.EchoService, logger *slog.Logger) *Ech
 
 func (h *EchoHandler) PostV1Echo(w http.ResponseWriter, r *http.Request) {
 	var req services.EchoRequest
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.logger.Error("Failed to decode request body", "error", err)
 		http.Error(w, `{"error":"Invalid JSON"}`, http.StatusBadRequest)
