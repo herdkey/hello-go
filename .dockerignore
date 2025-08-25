@@ -1,12 +1,16 @@
 # VCS and tooling
-*.iml
-/.idea/
-/.vscode/
-/.junie/
+.git
+.gitignore
+.idea
+.vscode
+.junie
 
 # Build artifacts
 /bin/
 /.bin/
+
+# Unrelated content
+/prompts
 
 # OS/editor junk
 .DS_Store

@@ -8,16 +8,23 @@ RUN apk add --no-cache git ca-certificates tzdata
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY go.mod go.sum ./
+COPY go.mod go.sum config.default.yaml ./
 
 # Download dependencies
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY "./cmd" "./cmd"
+COPY ./internal ./internal
+COPY ./api ./api
 
 # Build the application with CGO disabled for a static binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o bin/hello-go ./cmd/hello-go
+RUN CGO_ENABLED=0 GOOS=linux \
+    go build -a \
+    -installsuffix cgo \
+    -ldflags '-extldflags "-static"' \
+    -o bin/hello-go \
+    ./cmd/hello-go
 
 # Final stage
 FROM scratch
@@ -39,7 +46,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/hello-go", "--help"] || exit 1
+    CMD ["/hello-go", "--help"]
 
 # Run the binary
 ENTRYPOINT ["/hello-go"]
