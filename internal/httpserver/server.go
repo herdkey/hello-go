@@ -3,7 +3,7 @@ package httpserver
 import (
 	"context"
 	"fmt"
-	"log/slog"
+	"golang.org/x/exp/slog"
 	"net/http"
 	"time"
 

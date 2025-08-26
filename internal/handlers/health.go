@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/herdkey/hello-go/internal/api"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // HealthHandler handles health check requests.
