@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
+	"github.com/herdkey/hello-go/internal/handlers"
 	"github.com/herdkey/hello-go/internal/services"
 )
 
