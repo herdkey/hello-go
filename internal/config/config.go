@@ -8,10 +8,9 @@ import (
 )
 
 type Config struct {
-	Logging     LoggingConfig   `mapstructure:"logging"`
-	Environment string          `mapstructure:"environment"`
-	Telemetry   TelemetryConfig `mapstructure:"telemetry"`
-	Server      ServerConfig    `mapstructure:"server"`
+	Logging   LoggingConfig   `mapstructure:"logging"`
+	Telemetry TelemetryConfig `mapstructure:"telemetry"`
+	Server    ServerConfig    `mapstructure:"server"`
 }
 
 type ServerConfig struct {

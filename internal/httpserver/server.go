@@ -55,7 +55,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 // NewRouter sets up the router with middlewares and routes.
-func NewRouter(environment string) chi.Router {
+func NewRouter() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -64,16 +64,6 @@ func NewRouter(environment string) chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	// Serve openapi.yaml only in development
-	if environment == "development" {
-		r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/x-yaml")
-			_, e := w.Write(api.OpenAPISpec)
-			if e != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		})
-	}
 
 	return r
 }

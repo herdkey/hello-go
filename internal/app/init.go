@@ -37,7 +37,7 @@ func Initialize(ctx context.Context) (*Application, error) {
 		return nil, fmt.Errorf("failed to setup telemetry: %w", err)
 	}
 
-	router := setupRouter(cfg.Environment, logger)
+	router := setupRouter(logger)
 
 	server := httpserver.New(cfg.Server, router, logger)
 
@@ -49,8 +49,8 @@ func Initialize(ctx context.Context) (*Application, error) {
 	}, nil
 }
 
-func setupRouter(environment string, logger *slog.Logger) chi.Router {
-	router := httpserver.NewRouter(environment)
+func setupRouter(logger *slog.Logger) chi.Router {
+	router := httpserver.NewRouter()
 
 	httpserver.AddHealthRoutes(router)
 
