@@ -8,12 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/herdkey/hello-go/internal/utils"
+
 	"github.com/herdkey/hello-go/internal/api"
 )
-
-func ptr(s string) *string {
-	return &s
-}
 
 func TestEchoService_Echo(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -34,8 +32,8 @@ func TestEchoService_Echo(t *testing.T) {
 				Author:  "Alice",
 			},
 			expected: api.EchoResponse{
-				Message: ptr("Hello, World!"),
-				Author:  ptr("Alice"),
+				Message: utils.StringPtr("Hello, World!"),
+				Author:  utils.StringPtr("Alice"),
 			},
 		},
 		{
@@ -45,8 +43,8 @@ func TestEchoService_Echo(t *testing.T) {
 				Author:  "",
 			},
 			expected: api.EchoResponse{
-				Message: ptr(""),
-				Author:  ptr(""),
+				Message: utils.StringPtr(""),
+				Author:  utils.StringPtr(""),
 			},
 		},
 		{
@@ -56,8 +54,8 @@ func TestEchoService_Echo(t *testing.T) {
 				Author:  "User123",
 			},
 			expected: api.EchoResponse{
-				Message: ptr("Hello! @#$%^&*()"),
-				Author:  ptr("User123"),
+				Message: utils.StringPtr("Hello! @#$%^&*()"),
+				Author:  utils.StringPtr("User123"),
 			},
 		},
 	}
