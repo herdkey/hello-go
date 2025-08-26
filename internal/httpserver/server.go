@@ -11,8 +11,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/herdkey/hello-go/internal/api"
-
 	"github.com/herdkey/hello-go/internal/config"
 )
 
@@ -63,7 +61,6 @@ func NewRouter() chi.Router {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
-
 
 	return r
 }
