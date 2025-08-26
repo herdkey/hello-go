@@ -5,6 +5,10 @@ go 1.24.6
 require (
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/spf13/cobra v1.9.1
+	github.com/knadh/koanf v1.5.0
+	github.com/knadh/koanf/parsers/yaml v1.5.0
+	github.com/knadh/koanf/providers/file v1.5.0
+	github.com/knadh/koanf/providers/env v1.5.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0

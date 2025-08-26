@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
 )
 
 type Config struct {
@@ -17,33 +19,18 @@ type ServerConfig struct {
 }
 
 func LoadConfig() (*Config, error) {
-	v := viper.New()
-
-	// Set default config
-	v.SetConfigName("default")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
-
-	if err := v.ReadInConfig(); err != nil {
+	k := koanf.New(".")
+	if err := k.Load(file.Provider("./config/default.yaml"), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error reading default config: %w", err)
 	}
-
-	// Merge local config
-	v.SetConfigName("local")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge local config: %w", err)
-	}
-
-	// Merge private config
-	v.SetConfigName("private")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge private config: %w", err)
-	}
+	// Attempt local merge
+	_ = k.Load(file.Provider("./config/local.yaml"), yaml.Parser()) 
+	// Attempt private merge
+	_ = k.Load(file.Provider("./config/private.yaml"), yaml.Parser())
 
 	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
+	if err := k.Unmarshal("", &cfg); err != nil {
 		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
-
 	return &cfg, nil
 }

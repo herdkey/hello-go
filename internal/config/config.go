@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
+	"strings"
 )
 
 type Config struct {
@@ -36,60 +40,32 @@ type TelemetryConfig struct {
 var configFileNames = []string{"default", "local", "private"}
 
 func Load() (*Config, error) {
-	v := viper.New()
-
-	config, err := mergeConfigFiles(v)
-	if err != nil {
-		return config, err
+	k := koanf.New(".")
+	// Load base files in desired sequence
+	if err := k.Load(file.Provider("./configs/default.yaml"), yaml.Parser()); err != nil {
+		return nil, fmt.Errorf("failed to load default config: %w", err)
 	}
-
-	if err := bindEnv(v); err != nil {
+	if err := k.Load(file.Provider("./configs/local.yaml"), yaml.Parser()); err != nil {
+		// ignore “missing local” if you want
+	}
+	if err := k.Load(file.Provider("./configs/private.yaml"), yaml.Parser()); err != nil {
+		// ignore “missing private” if you want
+	}
+	// Load environment variables
+	err := k.Load(env.Provider("APP_", ".", func(s string) string {
+		return strings.Replace(strings.ToLower(s), "_", ".", -1)
+	}), nil)
+	if err != nil {
 		return nil, fmt.Errorf("failed to bind environment variables: %w", err)
 	}
 
 	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
+	if err := k.Unmarshal("", &cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-
 	return &cfg, nil
 }
 
-func mergeConfigFiles(v *viper.Viper) (*Config, error) {
-	v.AddConfigPath("./configs")
-	v.AddConfigPath(".")
-	v.SetConfigType("yaml")
-
-	// Merge in config files
-	for _, configName := range configFileNames {
-		v.SetConfigName(configName)
-		if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			return nil, fmt.Errorf("failed to merge %s config: %w", configName, err)
-		}
-	}
-	return nil, nil
-}
-
-func bindEnv(v *viper.Viper) error {
-	v.SetEnvPrefix("APP")
-	v.AutomaticEnv()
-
-	bindings := map[string]string{
-		"server.host":       "APP_SERVER_HOST",
-		"server.port":       "APP_SERVER_PORT",
-		"logging.level":     "APP_LOGGING_LEVEL",
-		"logging.format":    "APP_LOGGING_FORMAT",
-		"telemetry.enabled": "APP_TELEMETRY_ENABLED",
-	}
-
-	// Bind environment variables explicitly for nested keys
-	for key, env := range bindings {
-		if err := v.BindEnv(key, env); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func (s ServerConfig) Address() string {
 	return fmt.Sprintf("%s:%d", s.Host, s.Port)
