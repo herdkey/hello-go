@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
-	// "github.com/herdkey/hello-go/internal/handlers" // Removed to prevent self-import
 	"github.com/herdkey/hello-go/internal/services"
 )
 
@@ -23,7 +22,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	}))
 
 	echoService := services.NewEchoService(logger)
-	handler := handlers.NewEchoHandler(echoService, logger)
+	handler := NewEchoHandler(echoService, logger)
 
 	tests := []struct {
 		requestBody    interface{}

@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
-	// "github.com/herdkey/hello-go/internal/services" // Removed to prevent self-import
 )
 
 func ptr(s string) *string {
@@ -24,41 +23,41 @@ func TestEchoService_Echo(t *testing.T) {
 	service := NewEchoService(logger)
 
 	tests := []struct {
-		name     string
-		request  api.EchoRequest
 		expected api.EchoResponse
+		request  api.EchoRequest
+		name     string
 	}{
 		{
 			name: "successful echo",
 			request: api.EchoRequest{
-				Message: ptr("Hello, World!"),
-				Author:  ptr("Alice"),
-			},
-			expected: api.EchoResponse{
 				Message: "Hello, World!",
 				Author:  "Alice",
+			},
+			expected: api.EchoResponse{
+				Message: ptr("Hello, World!"),
+				Author:  ptr("Alice"),
 			},
 		},
 		{
 			name: "empty message and author",
 			request: api.EchoRequest{
-				Message: ptr(""),
-				Author:  ptr(""),
-			},
-			expected: api.EchoResponse{
 				Message: "",
 				Author:  "",
+			},
+			expected: api.EchoResponse{
+				Message: ptr(""),
+				Author:  ptr(""),
 			},
 		},
 		{
 			name: "special characters",
 			request: api.EchoRequest{
-				Message: ptr("Hello! @#$%^&*()"),
-				Author:  ptr("User123"),
-			},
-			expected: api.EchoResponse{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
+			},
+			expected: api.EchoResponse{
+				Message: ptr("Hello! @#$%^&*()"),
+				Author:  ptr("User123"),
 			},
 		},
 	}
@@ -76,7 +75,7 @@ func TestEchoService_Echo(t *testing.T) {
 func TestNewEchoService(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	service := services.NewEchoService(logger)
+	service := NewEchoService(logger)
 
 	require.NotNil(t, service)
 	assert.NotNil(t, service.logger)

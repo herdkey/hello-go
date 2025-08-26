@@ -6,19 +6,19 @@ import (
 	"github.com/herdkey/hello-go/internal/api"
 )
 
- // EchoService provides echo functionality.
+// EchoService provides echo functionality.
 type EchoService struct {
 	logger *slog.Logger
 }
 
- // NewEchoService creates a new EchoService instance with the provided logger.
+// NewEchoService creates a new EchoService instance with the provided logger.
 func NewEchoService(logger *slog.Logger) *EchoService {
 	return &EchoService{
 		logger: logger,
 	}
 }
 
- // Echo processes the EchoRequest and returns an EchoResponse.
+// Echo processes the EchoRequest and returns an EchoResponse.
 func (s *EchoService) Echo(req api.EchoRequest) api.EchoResponse {
 	s.logger.Info("Processing echo request",
 		"message", req.Message,
