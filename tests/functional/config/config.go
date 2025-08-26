@@ -22,7 +22,7 @@ func LoadConfig() (*Config, error) {
 	// Set default config
 	v.SetConfigName("default")
 	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
+	v.AddConfigPath("./tests/functional/config")
 
 	if err := v.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading default config: %w", err)
