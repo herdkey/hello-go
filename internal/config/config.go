@@ -36,7 +36,6 @@ type TelemetryConfig struct {
 	Enabled        bool   `mapstructure:"enabled"`
 }
 
-
 func Load() (*Config, error) {
 	k := koanf.New(".")
 	// Load base files in desired sequence
