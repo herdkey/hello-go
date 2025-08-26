@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
+	"github.com/herdkey/hello-go/internal/services"
 )
 
 func ptr(s string) *string {
