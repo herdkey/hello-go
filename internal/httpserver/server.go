@@ -85,7 +85,7 @@ func serveOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AddHealthRoutes(r chi.Router) {
+func AddHealthRoutes(r chi.Router, logger *slog.Logger) {
 	healthHandler := handlers.NewHealthHandler(logger)
 	r.Get("/healthz", healthHandler.GetHealth)
 	r.Get("/readyz", healthHandler.GetReady)
