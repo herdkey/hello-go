@@ -50,7 +50,7 @@ func Initialize(ctx context.Context) (*Application, error) {
 }
 
 func setupRouter(environment string, logger *slog.Logger) chi.Router {
-	router := httpserver.NewRouter()
+	router := httpserver.NewRouter(environment)
 
 	httpserver.AddHealthRoutes(router)
 
