@@ -23,7 +23,7 @@ type Application struct {
 	Logger            *slog.Logger
 }
 
- // Initialize sets up the application with server, telemetry, config, and logging.
+// Initialize sets up the application with server, telemetry, config, and logging.
 func Initialize(ctx context.Context) (*Application, error) {
 	cfg, err := config.Load()
 	if err != nil {
