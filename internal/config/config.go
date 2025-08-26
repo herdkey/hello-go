@@ -1,11 +1,14 @@
 package config
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/file"
 )
 
 type Config struct {
@@ -34,44 +37,27 @@ type TelemetryConfig struct {
 }
 
 func Load() (*Config, error) {
-	v := viper.New()
+	k := koanf.New(".")
 
-	v.SetConfigName("config.default")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
-	v.AddConfigPath(".")
-
-	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+	// Load base files in desired sequence
+	if err := k.Load(file.Provider("./configs/default.yaml"), yaml.Parser()); err != nil {
+		return nil, fmt.Errorf("failed to load default config: %w", err)
 	}
+	_ = k.Load(file.Provider("./configs/local.yaml"), yaml.Parser())
+	_ = k.Load(file.Provider("./configs/private.yaml"), yaml.Parser())
 
-	v.SetEnvPrefix("APP")
-	v.AutomaticEnv()
-
-	// Bind environment variables explicitly for nested keys
-	_ = v.BindEnv("server.host", "APP_SERVER_HOST")
-	_ = v.BindEnv("server.port", "APP_SERVER_PORT")
-	_ = v.BindEnv("logging.level", "APP_LOGGING_LEVEL")
-	_ = v.BindEnv("logging.format", "APP_LOGGING_FORMAT")
-	_ = v.BindEnv("telemetry.enabled", "APP_TELEMETRY_ENABLED")
-
-	// Merge local config
-	v.SetConfigName("local")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge local config: %w", err)
-	}
-
-	// Merge private config
-	v.SetConfigName("private")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge private config: %w", err)
+	// Load environment variables
+	err := k.Load(env.Provider("APP_", ".", func(s string) string {
+		return strings.ReplaceAll(strings.ToLower(s), "_", ".")
+	}), nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to bind environment variables: %w", err)
 	}
 
 	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
+	if err := k.Unmarshal("", &cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-
 	return &cfg, nil
 }
 
