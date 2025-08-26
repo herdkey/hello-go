@@ -2,13 +2,13 @@ package config
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
-	"strings"
 )
 
 type Config struct {
@@ -52,7 +52,7 @@ func Load() (*Config, error) {
 	}
 	// Load environment variables
 	err := k.Load(env.Provider("APP_", ".", func(s string) string {
-		return strings.Replace(strings.ToLower(s), "_", ".", -1)
+		return strings.ReplaceAll(strings.ToLower(s), "_", ".")
 	}), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to bind environment variables: %w", err)
@@ -64,7 +64,6 @@ func Load() (*Config, error) {
 	}
 	return &cfg, nil
 }
-
 
 func (s ServerConfig) Address() string {
 	return fmt.Sprintf("%s:%d", s.Host, s.Port)
