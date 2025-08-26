@@ -7,12 +7,16 @@ import (
 	"net/http"
 	"time"
 
+	// Add the embed import
+	_ "embed"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/herdkey/hello-go/internal/api"
+
 	"github.com/herdkey/hello-go/internal/config"
-	"github.com/herdkey/hello-go/internal/embedfs"
 )
 
 type Server struct {
@@ -20,6 +24,7 @@ type Server struct {
 	logger *slog.Logger
 }
 
+// New creates a new Server instance with the provided configuration and router.
 func New(cfg config.ServerConfig, router chi.Router, logger *slog.Logger) *Server {
 	srv := &http.Server{
 		Addr:         cfg.Address(),
@@ -51,6 +56,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
+// NewRouter sets up the router with middlewares and routes.
 func NewRouter() chi.Router {
 	r := chi.NewRouter()
 
@@ -60,15 +66,22 @@ func NewRouter() chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/x-yaml")
-		_, e := w.Write(embedfs.OpenAPISpec)
-		if e != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
+	// Serve openapi.yaml unconditionally
+	r.Get("/api/openapi.yaml", serveOpenAPISpec)
 
 	return r
+}
+
+// serveOpenAPISpec handles the /api/openapi.yaml endpoint.
+func serveOpenAPISpec(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/x-yaml")
+	w.WriteHeader(http.StatusOK)
+
+	_, err := w.Write(api.OpenAPISpec)
+	if err != nil {
+		// Log the error and send a 500 response
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func AddHealthRoutes(r chi.Router) {

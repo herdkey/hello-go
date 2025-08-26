@@ -15,6 +15,7 @@ import (
 	"github.com/herdkey/hello-go/internal/telemetry"
 )
 
+// Application encompasses the server, telemetry, configuration, and logger.
 type Application struct {
 	Server            *httpserver.Server
 	TelemetryProvider *telemetry.Provider
@@ -22,6 +23,7 @@ type Application struct {
 	Logger            *slog.Logger
 }
 
+// Initialize sets up the application with server, telemetry, config, and logging.
 func Initialize(ctx context.Context) (*Application, error) {
 	cfg, err := config.Load()
 	if err != nil {

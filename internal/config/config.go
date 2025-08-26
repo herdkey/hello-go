@@ -37,6 +37,7 @@ func Load() (*Config, error) {
 
 	v.SetConfigName("config.default")
 	v.SetConfigType("yaml")
+	v.AddConfigPath("./config")
 	v.AddConfigPath(".")
 
 	if err := v.ReadInConfig(); err != nil {

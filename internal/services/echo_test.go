@@ -7,7 +7,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/herdkey/hello-go/internal/api"
 )
+
+func ptr(s string) *string {
+	return &s
+}
 
 func TestEchoService_Echo(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -17,41 +23,41 @@ func TestEchoService_Echo(t *testing.T) {
 	service := NewEchoService(logger)
 
 	tests := []struct {
+		expected api.EchoResponse
+		request  api.EchoRequest
 		name     string
-		request  EchoRequest
-		expected EchoResponse
 	}{
 		{
 			name: "successful echo",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
-			expected: EchoResponse{
-				Message: "Hello, World!",
-				Author:  "Alice",
+			expected: api.EchoResponse{
+				Message: ptr("Hello, World!"),
+				Author:  ptr("Alice"),
 			},
 		},
 		{
 			name: "empty message and author",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "",
 				Author:  "",
 			},
-			expected: EchoResponse{
-				Message: "",
-				Author:  "",
+			expected: api.EchoResponse{
+				Message: ptr(""),
+				Author:  ptr(""),
 			},
 		},
 		{
 			name: "special characters",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
-			expected: EchoResponse{
-				Message: "Hello! @#$%^&*()",
-				Author:  "User123",
+			expected: api.EchoResponse{
+				Message: ptr("Hello! @#$%^&*()"),
+				Author:  ptr("User123"),
 			},
 		},
 	}

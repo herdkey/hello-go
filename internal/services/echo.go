@@ -2,33 +2,31 @@ package services
 
 import (
 	"log/slog"
+
+	"github.com/herdkey/hello-go/internal/api"
 )
 
+// EchoService provides echo functionality.
 type EchoService struct {
 	logger *slog.Logger
 }
 
-type EchoRequest struct {
-	Message string `json:"message"`
-	Author  string `json:"author"`
-}
-
-type EchoResponse struct {
-	Message string `json:"message"`
-	Author  string `json:"author"`
-}
-
+// NewEchoService creates a new EchoService instance with the provided logger.
 func NewEchoService(logger *slog.Logger) *EchoService {
 	return &EchoService{
 		logger: logger,
 	}
 }
 
-func (s *EchoService) Echo(req EchoRequest) EchoResponse {
+// Echo processes the EchoRequest and returns an EchoResponse.
+func (s *EchoService) Echo(req api.EchoRequest) api.EchoResponse {
 	s.logger.Info("Processing echo request",
 		"message", req.Message,
 		"author", req.Author,
 	)
 
-	return EchoResponse(req)
+	return api.EchoResponse{
+		Message: &req.Message,
+		Author:  &req.Author,
+	}
 }
