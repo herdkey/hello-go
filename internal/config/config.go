@@ -36,7 +36,6 @@ type TelemetryConfig struct {
 	Enabled        bool   `mapstructure:"enabled"`
 }
 
-var configFileNames = []string{"default", "local", "private"}
 
 func Load() (*Config, error) {
 	k := koanf.New(".")
@@ -44,12 +43,8 @@ func Load() (*Config, error) {
 	if err := k.Load(file.Provider("./configs/default.yaml"), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("failed to load default config: %w", err)
 	}
-	if err := k.Load(file.Provider("./configs/local.yaml"), yaml.Parser()); err != nil {
-		// ignore “missing local” if you want
-	}
-	if err := k.Load(file.Provider("./configs/private.yaml"), yaml.Parser()); err != nil {
-		// ignore “missing private” if you want
-	}
+	_ = k.Load(file.Provider("./configs/local.yaml"), yaml.Parser())
+	_ = k.Load(file.Provider("./configs/private.yaml"), yaml.Parser())
 	// Load environment variables
 	err := k.Load(env.Provider("APP_", ".", func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(s), "_", ".")
