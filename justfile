@@ -15,7 +15,10 @@ build:
 
 # Run tests
 test:
-    go test ./...
+    go test $(go list ./... | grep -v 'tests/functional')
+
+functional-test:
+    go test ./tests/functional/...
 
 # Run linter
 lint args='':

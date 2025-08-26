@@ -33,38 +33,18 @@ type TelemetryConfig struct {
 	Enabled        bool   `mapstructure:"enabled"`
 }
 
+var configFileNames = []string{"default", "local", "private"}
+
 func Load() (*Config, error) {
 	v := viper.New()
 
-	v.SetConfigName("config.default")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
-	v.AddConfigPath(".")
-
-	if err := v.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+	config, err := mergeConfigFiles(v)
+	if err != nil {
+		return config, err
 	}
 
-	v.SetEnvPrefix("APP")
-	v.AutomaticEnv()
-
-	// Bind environment variables explicitly for nested keys
-	_ = v.BindEnv("server.host", "APP_SERVER_HOST")
-	_ = v.BindEnv("server.port", "APP_SERVER_PORT")
-	_ = v.BindEnv("logging.level", "APP_LOGGING_LEVEL")
-	_ = v.BindEnv("logging.format", "APP_LOGGING_FORMAT")
-	_ = v.BindEnv("telemetry.enabled", "APP_TELEMETRY_ENABLED")
-
-	// Merge local config
-	v.SetConfigName("local")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge local config: %w", err)
-	}
-
-	// Merge private config
-	v.SetConfigName("private")
-	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
-		return nil, fmt.Errorf("failed to merge private config: %w", err)
+	if err := bindEnv(v); err != nil {
+		return nil, fmt.Errorf("failed to bind environment variables: %w", err)
 	}
 
 	var cfg Config
@@ -73,6 +53,42 @@ func Load() (*Config, error) {
 	}
 
 	return &cfg, nil
+}
+
+func mergeConfigFiles(v *viper.Viper) (*Config, error) {
+	v.AddConfigPath("./configs")
+	v.AddConfigPath(".")
+	v.SetConfigType("yaml")
+
+	// Merge in config files
+	for _, configName := range configFileNames {
+		v.SetConfigName(configName)
+		if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+			return nil, fmt.Errorf("failed to merge %s config: %w", configName, err)
+		}
+	}
+	return nil, nil
+}
+
+func bindEnv(v *viper.Viper) error {
+	v.SetEnvPrefix("APP")
+	v.AutomaticEnv()
+
+	bindings := map[string]string{
+		"server.host":       "APP_SERVER_HOST",
+		"server.port":       "APP_SERVER_PORT",
+		"logging.level":     "APP_LOGGING_LEVEL",
+		"logging.format":    "APP_LOGGING_FORMAT",
+		"telemetry.enabled": "APP_TELEMETRY_ENABLED",
+	}
+
+	// Bind environment variables explicitly for nested keys
+	for key, env := range bindings {
+		if err := v.BindEnv(key, env); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s ServerConfig) Address() string {
