@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/herdkey/hello-go/internal/api"
 	"github.com/herdkey/hello-go/internal/services"
 )
 
@@ -21,7 +22,7 @@ func NewEchoHandler(echoService *services.EchoService, logger *slog.Logger) *Ech
 }
 
 func (h *EchoHandler) PostV1Echo(w http.ResponseWriter, r *http.Request) {
-	var req services.EchoRequest
+	var req api.EchoRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.logger.Error("Failed to decode request body", "error", err)

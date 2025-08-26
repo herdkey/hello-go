@@ -2,20 +2,12 @@ package services
 
 import (
 	"log/slog"
+
+	"github.com/herdkey/hello-go/internal/api"
 )
 
 type EchoService struct {
 	logger *slog.Logger
-}
-
-type EchoRequest struct {
-	Message string `json:"message"`
-	Author  string `json:"author"`
-}
-
-type EchoResponse struct {
-	Message string `json:"message"`
-	Author  string `json:"author"`
 }
 
 func NewEchoService(logger *slog.Logger) *EchoService {
@@ -24,11 +16,14 @@ func NewEchoService(logger *slog.Logger) *EchoService {
 	}
 }
 
-func (s *EchoService) Echo(req EchoRequest) EchoResponse {
+func (s *EchoService) Echo(req api.EchoRequest) api.EchoResponse {
 	s.logger.Info("Processing echo request",
 		"message", req.Message,
 		"author", req.Author,
 	)
 
-	return EchoResponse(req)
+	return api.EchoResponse{
+		Message: &req.Message,
+		Author:  &req.Author,
+	}
 }
