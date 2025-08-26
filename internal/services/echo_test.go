@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/herdkey/hello-go/internal/api"
 )
 
 func TestEchoService_Echo(t *testing.T) {
@@ -18,38 +20,38 @@ func TestEchoService_Echo(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		request  EchoRequest
-		expected EchoResponse
+		request  api.EchoRequest
+		expected api.EchoResponse
 	}{
 		{
 			name: "successful echo",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
-			expected: EchoResponse{
+			expected: api.EchoResponse{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
 		},
 		{
 			name: "empty message and author",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "",
 				Author:  "",
 			},
-			expected: EchoResponse{
+			expected: api.EchoResponse{
 				Message: "",
 				Author:  "",
 			},
 		},
 		{
 			name: "special characters",
-			request: EchoRequest{
+			request: api.EchoRequest{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
-			expected: EchoResponse{
+			expected: api.EchoResponse{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
