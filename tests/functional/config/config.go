@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/viper"
@@ -29,14 +30,14 @@ func LoadConfig() (*Config, error) {
 
 	// Merge local config
 	v.SetConfigName("local")
-	if err := v.MergeInConfig(); err != nil {
-		// Local config might not exist; proceed if it doesn't
+	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+		return nil, fmt.Errorf("failed to merge local config: %w", err)
 	}
 
 	// Merge private config
 	v.SetConfigName("private")
-	if err := v.MergeInConfig(); err != nil {
-		// Private config might not exist; proceed if it doesn't
+	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+		return nil, fmt.Errorf("failed to merge private config: %w", err)
 	}
 
 	var cfg Config
