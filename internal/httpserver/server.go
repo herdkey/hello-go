@@ -17,6 +17,7 @@ import (
 	"github.com/herdkey/hello-go/internal/api"
 
 	"github.com/herdkey/hello-go/internal/config"
+	"github.com/herdkey/hello-go/internal/handlers"
 )
 
 type Server struct {
@@ -85,21 +86,7 @@ func serveOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddHealthRoutes(r chi.Router) {
-	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, e := w.Write([]byte(`{"status":"ok"}`))
-		if e != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
-
-	r.Get("/readyz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, e := w.Write([]byte(`{"status":"ready"}`))
-		if e != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
+	healthHandler := handlers.NewHealthHandler(logger)
+	r.Get("/healthz", healthHandler.GetHealth)
+	r.Get("/readyz", healthHandler.GetReady)
 }

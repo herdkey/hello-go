@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/herdkey/hello-go/internal/api"
 	"time"
 
 	"github.com/herdkey/hello-go/tests/functional/config"
 )
 
-type HealthResponse struct {
-	Status string `json:"status"`
-}
 
 func TestHealthEndpoint(t *testing.T) {
 	cfg, err := config.LoadConfig()
@@ -41,7 +40,7 @@ func TestHealthEndpoint(t *testing.T) {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
-	var healthResp HealthResponse
+	var healthResp api.HealthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&healthResp); err != nil {
 		t.Fatalf("Failed to decode response: %v", err)
 	}

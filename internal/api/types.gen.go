@@ -27,5 +27,7 @@ type ErrorResponse struct {
 	Error *string `json:"error,omitempty"`
 }
 
-// EchoJSONRequestBody defines body for Echo for application/json ContentType.
-type EchoJSONRequestBody = EchoRequest
++ // HealthResponse defines the structure for health check responses.
++ type HealthResponse struct {
++     Status string `json:"status"`
++ }
