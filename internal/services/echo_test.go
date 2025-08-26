@@ -11,12 +11,16 @@ import (
 	"github.com/herdkey/hello-go/internal/api"
 )
 
+func ptr(s string) *string {
+	return &s
+}
+
 func TestEchoService_Echo(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelError,
 	}))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	tests := []struct {
 		name     string
@@ -26,8 +30,8 @@ func TestEchoService_Echo(t *testing.T) {
 		{
 			name: "successful echo",
 			request: api.EchoRequest{
-				Message: "Hello, World!",
-				Author:  "Alice",
+				Message: ptr("Hello, World!"),
+				Author:  ptr("Alice"),
 			},
 			expected: api.EchoResponse{
 				Message: "Hello, World!",
@@ -37,8 +41,8 @@ func TestEchoService_Echo(t *testing.T) {
 		{
 			name: "empty message and author",
 			request: api.EchoRequest{
-				Message: "",
-				Author:  "",
+				Message: ptr(""),
+				Author:  ptr(""),
 			},
 			expected: api.EchoResponse{
 				Message: "",
@@ -48,8 +52,8 @@ func TestEchoService_Echo(t *testing.T) {
 		{
 			name: "special characters",
 			request: api.EchoRequest{
-				Message: "Hello! @#$%^&*()",
-				Author:  "User123",
+				Message: ptr("Hello! @#$%^&*()"),
+				Author:  ptr("User123"),
 			},
 			expected: api.EchoResponse{
 				Message: "Hello! @#$%^&*()",
@@ -71,7 +75,7 @@ func TestEchoService_Echo(t *testing.T) {
 func TestNewEchoService(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	require.NotNil(t, service)
 	assert.NotNil(t, service.logger)
