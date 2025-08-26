@@ -1,4 +1,4 @@
-package services_test
+package services
 
 import (
 	"log/slog"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
-	"github.com/herdkey/hello-go/internal/services"
+	// "github.com/herdkey/hello-go/internal/services" // Removed to prevent self-import
 )
 
 func ptr(s string) *string {
@@ -21,7 +21,7 @@ func TestEchoService_Echo(t *testing.T) {
 		Level: slog.LevelError,
 	}))
 
-	service := services.NewEchoService(logger)
+	service := NewEchoService(logger)
 
 	tests := []struct {
 		name     string
