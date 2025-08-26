@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"golang.org/x/exp/slog"
+	"log/slog"
 
 	"github.com/go-chi/chi/v5"
 

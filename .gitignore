@@ -13,4 +13,7 @@
 Thumbs.db
 .aider*
 .aider/
+
+# Config
+/config.private.yaml
 /tests/functional/config/private.yaml

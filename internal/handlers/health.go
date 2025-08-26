@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-
-	"github.com/herdkey/hello-go/internal/api"
 )
+
+// HealthResponse represents the response for the health check endpoint.
+type HealthResponse struct {
+	Status string `json:"status"`
+}
 
 // HealthHandler handles health check requests.
 type HealthHandler struct {
@@ -22,7 +25,7 @@ func NewHealthHandler(logger *slog.Logger) *HealthHandler {
 
 // GetHealth handles the /healthz endpoint.
 func (h *HealthHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
-	response := api.HealthResponse{
+	response := HealthResponse{
 		Status: "ok",
 	}
 
@@ -36,7 +39,7 @@ func (h *HealthHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
 
 // GetReady handles the /readyz endpoint.
 func (h *HealthHandler) GetReady(w http.ResponseWriter, r *http.Request) {
-	response := api.HealthResponse{
+	response := HealthResponse{
 		Status: "ready",
 	}
 
