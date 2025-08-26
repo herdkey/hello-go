@@ -1,49 +1,49 @@
 package functional
 
 import (
-    "encoding/json"
-    "fmt"
-    "net/http"
-    "testing"
-    "time"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"testing"
+	"time"
 
-    "your_module_path/tests/functional/config"
+	"github.com/herdkey/hello-go/tests/functional/config"
 )
 
 type HealthResponse struct {
-    Status string `json:"status"`
+	Status string `json:"status"`
 }
 
 func TestHealthEndpoint(t *testing.T) {
-    cfg, err := config.LoadConfig()
-    if err != nil {
-        t.Fatalf("Failed to load config: %v", err)
-    }
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
 
-    baseURL := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
-    healthURL := fmt.Sprintf("%s/healthz", baseURL)
+	baseURL := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
+	healthURL := fmt.Sprintf("%s/healthz", baseURL)
 
-    client := &http.Client{
-        Timeout: 5 * time.Second,
-    }
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 
-    resp, err := client.Get(healthURL)
-    if err != nil {
-        t.Fatalf("Failed to call health endpoint: %v", err)
-    }
-    defer resp.Body.Close()
+	resp, err := client.Get(healthURL)
+	if err != nil {
+		t.Fatalf("Failed to call health endpoint: %v", err)
+	}
+	defer resp.Body.Close()
 
-    if resp.StatusCode != http.StatusOK {
-        t.Errorf("Expected status code 200, got %d", resp.StatusCode)
-    }
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
 
-    var healthResp HealthResponse
-    if err := json.NewDecoder(resp.Body).Decode(&healthResp); err != nil {
-        t.Fatalf("Failed to decode response: %v", err)
-    }
+	var healthResp HealthResponse
+	if err := json.NewDecoder(resp.Body).Decode(&healthResp); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
 
-    expectedStatus := "ok"
-    if healthResp.Status != expectedStatus {
-        t.Errorf("Expected status '%s', got '%s'", expectedStatus, healthResp.Status)
-    }
+	expectedStatus := "ok"
+	if healthResp.Status != expectedStatus {
+		t.Errorf("Expected status '%s', got '%s'", expectedStatus, healthResp.Status)
+	}
 }
