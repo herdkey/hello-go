@@ -52,7 +52,7 @@ func Initialize(ctx context.Context) (*Application, error) {
 func setupRouter(logger *slog.Logger) chi.Router {
 	router := httpserver.NewRouter()
 
-	httpserver.AddHealthRoutes(router)
+	httpserver.AddHealthRoutes(router, logger)
 
 	echoService := services.NewEchoService(logger)
 	echoHandler := handlers.NewEchoHandler(echoService, logger)

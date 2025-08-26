@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -53,6 +54,18 @@ func Load() (*Config, error) {
 	_ = v.BindEnv("logging.level", "APP_LOGGING_LEVEL")
 	_ = v.BindEnv("logging.format", "APP_LOGGING_FORMAT")
 	_ = v.BindEnv("telemetry.enabled", "APP_TELEMETRY_ENABLED")
+
+	// Merge local config
+	v.SetConfigName("local")
+	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+		return nil, fmt.Errorf("failed to merge local config: %w", err)
+	}
+
+	// Merge private config
+	v.SetConfigName("private")
+	if err := v.MergeInConfig(); err != nil && !errors.As(err, &viper.ConfigFileNotFoundError{}) {
+		return nil, fmt.Errorf("failed to merge private config: %w", err)
+	}
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
