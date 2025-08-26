@@ -11,8 +11,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/herdkey/hello-go/internal/api"
+
 	"github.com/herdkey/hello-go/internal/config"
-	"github.com/herdkey/hello-go/internal/embedfs"
 )
 
 type Server struct {
@@ -62,7 +63,7 @@ func NewRouter() chi.Router {
 
 	r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-yaml")
-		_, e := w.Write(embedfs.OpenAPISpec)
+		_, e := w.Write(api.OpenAPISpec)
 		if e != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}

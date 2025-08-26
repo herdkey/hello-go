@@ -18,13 +18,14 @@ test:
     go test ./...
 
 # Run linter
-lint:
+lint args='':
     #!/usr/bin/env -S zsh -eu -o pipefail
-    flags=""
+    args="{{args}}"
+    fix_flag=""
     if [[ "{{dev_mode}}" == "true" ]]; then
-        flags="--fix"
+        fix_flag="--fix"
     fi
-    golangci-lint run $flags
+    golangci-lint run $args $fix_flag
 
 # Generate code from OpenAPI spec
 generate:
