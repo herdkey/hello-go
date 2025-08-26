@@ -15,6 +15,7 @@ import (
 	"github.com/herdkey/hello-go/internal/telemetry"
 )
 
+// Application encompasses the server, telemetry, configuration, and logger.
 type Application struct {
 	Server            *httpserver.Server
 	TelemetryProvider *telemetry.Provider
@@ -22,6 +23,7 @@ type Application struct {
 	Logger            *slog.Logger
 }
 
+ // Initialize sets up the application with server, telemetry, config, and logging.
 func Initialize(ctx context.Context) (*Application, error) {
 	cfg, err := config.Load()
 	if err != nil {
@@ -35,7 +37,7 @@ func Initialize(ctx context.Context) (*Application, error) {
 		return nil, fmt.Errorf("failed to setup telemetry: %w", err)
 	}
 
-	router := setupRouter(logger)
+	router := setupRouter(cfg.Environment, logger)
 
 	server := httpserver.New(cfg.Server, router, logger)
 
@@ -47,7 +49,7 @@ func Initialize(ctx context.Context) (*Application, error) {
 	}, nil
 }
 
-func setupRouter(logger *slog.Logger) chi.Router {
+func setupRouter(environment string, logger *slog.Logger) chi.Router {
 	router := httpserver.NewRouter()
 
 	httpserver.AddHealthRoutes(router)

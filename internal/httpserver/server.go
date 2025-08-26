@@ -16,11 +16,13 @@ import (
 	"github.com/herdkey/hello-go/internal/config"
 )
 
+// Server wraps the HTTP server and logger.
 type Server struct {
 	server *http.Server
 	logger *slog.Logger
 }
 
+// New creates a new Server instance with the provided configuration and router.
 func New(cfg config.ServerConfig, router chi.Router, logger *slog.Logger) *Server {
 	srv := &http.Server{
 		Addr:         cfg.Address(),
@@ -52,7 +54,8 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
-func NewRouter() chi.Router {
+// NewRouter sets up the router with middlewares and routes.
+func NewRouter(environment string) chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -61,13 +64,16 @@ func NewRouter() chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/x-yaml")
-		_, e := w.Write(api.OpenAPISpec)
-		if e != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
+	// Serve openapi.yaml only in development
+	if environment == "development" {
+		r.Get("/api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/x-yaml")
+			_, e := w.Write(api.OpenAPISpec)
+			if e != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		})
+	}
 
 	return r
 }

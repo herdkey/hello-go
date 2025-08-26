@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/herdkey/hello-go/internal/api"
+	"github.com/herdkey/hello-go/internal/handlers"
 	"github.com/herdkey/hello-go/internal/services"
 )
 
@@ -21,17 +23,18 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	}))
 
 	echoService := services.NewEchoService(logger)
-	handler := NewEchoHandler(echoService, logger)
+	handler := handlers.NewEchoHandler(echoService, logger)
 
 	tests := []struct {
 		requestBody    interface{}
 		name           string
+		expectedError  string
 		expectedBody   string
 		expectedStatus int
 	}{
 		{
 			name: "successful echo",
-			requestBody: services.EchoRequest{
+			requestBody: api.EchoRequest{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
@@ -42,7 +45,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 			name:           "invalid JSON",
 			requestBody:    "invalid json",
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"error":"Invalid JSON"}`,
+			expectedError:  "Invalid JSON",
 		},
 		{
 			name: "missing message",
@@ -50,7 +53,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 				"author": "Alice",
 			},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"error":"Missing required fields: message and author"}`,
+			expectedError:  "Missing required fields: message and author",
 		},
 		{
 			name: "missing author",
@@ -58,7 +61,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 				"message": "Hello, World!",
 			},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"error":"Missing required fields: message and author"}`,
+			expectedError:  "Missing required fields: message and author",
 		},
 		{
 			name: "empty message and author",
@@ -67,7 +70,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 				"author":  "",
 			},
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"error":"Missing required fields: message and author"}`,
+			expectedError:  "Missing required fields: message and author",
 		},
 	}
 
@@ -92,18 +95,22 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, w.Code)
 
 			if tt.expectedStatus == http.StatusOK {
-				var response services.EchoResponse
+				var response api.EchoResponse
 				err := json.NewDecoder(w.Body).Decode(&response)
 				require.NoError(t, err)
 
-				var expectedResponse services.EchoResponse
+				var expectedResponse api.EchoResponse
 				err = json.Unmarshal([]byte(tt.expectedBody), &expectedResponse)
 				require.NoError(t, err)
 
 				assert.Equal(t, expectedResponse.Message, response.Message)
 				assert.Equal(t, expectedResponse.Author, response.Author)
 			} else {
-				assert.Contains(t, w.Body.String(), tt.expectedBody)
+				var errorResp api.ErrorResponse
+				err := json.NewDecoder(w.Body).Decode(&errorResp)
+				require.NoError(t, err)
+
+				assert.Equal(t, tt.expectedError, *errorResp.Error)
 			}
 		})
 	}
