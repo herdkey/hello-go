@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/herdkey/hello-go/internal/api"
-	"log/slog"
 )
 
 // HealthHandler handles health check requests.
