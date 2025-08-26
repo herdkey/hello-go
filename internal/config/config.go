@@ -38,12 +38,14 @@ type TelemetryConfig struct {
 
 func Load() (*Config, error) {
 	k := koanf.New(".")
+
 	// Load base files in desired sequence
 	if err := k.Load(file.Provider("./configs/default.yaml"), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("failed to load default config: %w", err)
 	}
 	_ = k.Load(file.Provider("./configs/local.yaml"), yaml.Parser())
 	_ = k.Load(file.Provider("./configs/private.yaml"), yaml.Parser())
+
 	// Load environment variables
 	err := k.Load(env.Provider("APP_", ".", func(s string) string {
 		return strings.ReplaceAll(strings.ToLower(s), "_", ".")

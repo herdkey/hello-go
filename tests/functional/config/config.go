@@ -23,7 +23,7 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("error reading default config: %w", err)
 	}
 	// Attempt local merge
-	_ = k.Load(file.Provider("./config/local.yaml"), yaml.Parser()) 
+	_ = k.Load(file.Provider("./config/local.yaml"), yaml.Parser())
 	// Attempt private merge
 	_ = k.Load(file.Provider("./config/private.yaml"), yaml.Parser())
 
