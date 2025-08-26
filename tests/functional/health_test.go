@@ -31,7 +31,11 @@ func TestHealthEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to call health endpoint: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			t.Errorf("Error closing response body: %v", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
