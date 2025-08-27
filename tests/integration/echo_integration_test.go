@@ -18,8 +18,7 @@ func TestPOSTEcho(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create the generated client (point to correct server address).
-	url := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
-	client, err := api.NewClientWithResponses(url)
+	client, err := api.NewClientWithResponses(cfg.Server.URL())
 	require.NoError(t, err)
 
 	// Prepare a request body matching the EchoMessage struct.

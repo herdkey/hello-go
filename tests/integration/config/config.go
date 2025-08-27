@@ -17,6 +17,10 @@ type ServerConfig struct {
 	Port int    `mapstructure:"port"`
 }
 
+func (s *ServerConfig) URL() string {
+    return fmt.Sprintf("http://%s:%d", s.Host, s.Port)
+}
+
 func LoadConfig() (*Config, error) {
 	k := koanf.New(".")
 	if err := k.Load(file.Provider("./config/default.yaml"), yaml.Parser()); err != nil {
