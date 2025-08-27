@@ -25,7 +25,7 @@ func NewEchoHandler(echoService *services.EchoService, logger *slog.Logger) *Ech
 
 // PostV1Echo handles POST requests to the /v1/echo endpoint.
 func (h *EchoHandler) PostV1Echo(w http.ResponseWriter, r *http.Request) {
-	var req api.EchoRequest
+	var req api.EchoMessage
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.logger.Error("Failed to decode request body", "error", err)
@@ -51,7 +51,7 @@ func (h *EchoHandler) PostV1Echo(w http.ResponseWriter, r *http.Request) {
 
 // writeErrorResponse sends a structured error response.
 func writeErrorResponse(w http.ResponseWriter, statusCode int, errorMessage string, logger *slog.Logger) {
-	errorResp := api.ErrorResponse{
+	errorResp := api.Error{
 		Error: &errorMessage,
 	}
 
