@@ -21,11 +21,9 @@ func TestPOSTEcho(t *testing.T) {
 	require.NoError(t, err)
 
 	// Prepare a request body matching the EchoMessage struct.
-	message := "Hello, Echo!"
-	author := "IntegrationTest"
 	request := api.EchoMessage{
-		Message: message,
-		Author:  author,
+		Message: "Hello, Echo!",
+		Author:  "IntegrationTest",
 	}
 
 	// Invoke POST /v1/echo via the generated client.
@@ -35,6 +33,6 @@ func TestPOSTEcho(t *testing.T) {
 
 	// Confirm the server echoed back the same data.
 	require.NotNil(t, resp.JSON200)
-	require.Equal(t, message, resp.JSON200.Message)
-	require.Equal(t, author, resp.JSON200.Author)
+	require.Equal(t, request.Message, resp.JSON200.Message)
+	require.Equal(t, request.Author, resp.JSON200.Author)
 }
