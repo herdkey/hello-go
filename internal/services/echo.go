@@ -26,7 +26,7 @@ func (s *EchoService) Echo(msg api.EchoMessage) api.EchoMessage {
 	)
 
 	return api.EchoMessage{
-		Message: &msg.Message,
-		Author:  &msg.Author,
+		Message: msg.Message,
+		Author:  msg.Author,
 	}
 }

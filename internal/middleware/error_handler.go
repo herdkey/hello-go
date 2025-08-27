@@ -34,7 +34,7 @@ func (eh *ErrorHandler) ServeHTTP(next http.Handler) http.Handler {
 
 func writeErrorResponse(w http.ResponseWriter, statusCode int, errorMessage string, logger *slog.Logger) {
 	errorResp := api.Error{
-		Message: &errorMessage,
+		Error: &errorMessage,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
