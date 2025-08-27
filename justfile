@@ -20,6 +20,10 @@ test:
 integration-test:
     go test ./tests/integration/...
 
+# CI setup task
+ci-setup: install install-tools generate
+    @echo "CI setup complete."
+
 # Run linter
 lint args='':
     #!/usr/bin/env -S zsh -eu -o pipefail
