@@ -20,9 +20,13 @@ test:
 integration-test:
     go test ./tests/integration/...
 
+# CI setup task
+ci-setup: install install-tools generate
+    @echo "CI setup complete."
+
 # Run linter
 lint args='':
-    #!/usr/bin/env -S zsh -eu -o pipefail
+    #!/usr/bin/env -S bash -eu -o pipefail
     args="{{args}}"
     fix_flag=""
     if [[ "{{dev_mode}}" == "true" ]]; then
@@ -45,10 +49,9 @@ install:
 # Install development tools
 install-tools:
     mkdir -p "$GOBIN"
-    @command -v golangci-lint >/dev/null 2>&1 \
-        || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-    # @command -v oapi-codegen >/dev/null 2>&1 \
-    #     || go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+    @if [ "{{ci_mode}}" = "true" ]; then \
+        go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.4.0; \
+    fi
     go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
 # Run the server
