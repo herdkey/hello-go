@@ -49,7 +49,9 @@ install:
 # Install development tools
 install-tools:
     mkdir -p "$GOBIN"
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.4.0
+    @if [ "{{ci_mode}}" = "true" ]; then \
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.4.0; \
+    fi
     go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
 # Run the server
