@@ -2,17 +2,24 @@ package integration
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
+	"github.com/herdkey/hello-go/tests/integration/config"
 )
 
 func TestPOSTEcho(t *testing.T) {
+	// Load configuration
+	cfg, err := config.LoadConfig()
+	require.NoError(t, err)
+
 	// Create the generated client (point to correct server address).
-	client, err := api.NewClientWithResponses("http://localhost:8080")
+	url := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
+	client, err := api.NewClientWithResponses(url)
 	require.NoError(t, err)
 
 	// Prepare a request body matching the EchoMessage struct.
