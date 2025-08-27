@@ -74,5 +74,4 @@ func TestNewEchoService(t *testing.T) {
 	service := services.NewEchoService(logger)
 
 	require.NotNil(t, service)
-	assert.NotNil(t, service.logger)
 }
