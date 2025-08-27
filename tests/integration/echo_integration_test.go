@@ -1,33 +1,34 @@
 package integration
 
 import (
-    "context"
-    "net/http"
-    "testing"
+	"context"
+	"net/http"
+	"testing"
 
-    "github.com/stretchr/testify/require"
-    // Adjust the import below to match your actual module path.
-    "example.com/project/internal/api"
+	"github.com/stretchr/testify/require"
+	"github.com/herdkey/hello-go/internal/api"
 )
 
 func TestPOSTEcho(t *testing.T) {
-    // Create the generated client (point to correct server address).
-    client, err := api.NewClientWithResponses("http://localhost:8080")
-    require.NoError(t, err)
+	// Create the generated client (point to correct server address).
+	client, err := api.NewClientWithResponses("http://localhost:8080")
+	require.NoError(t, err)
 
-    // Prepare a request body matching the EchoMessage struct.
-    request := api.EchoMessage{
-        Message: "Hello, Echo!",
-        Author:  "IntegrationTest",
-    }
+	// Prepare a request body matching the EchoMessage struct.
+	message := "Hello, Echo!"
+	author := "IntegrationTest"
+	request := api.EchoMessage{
+		Message: &message,
+		Author:  &author,
+	}
 
-    // Invoke POST /v1/echo via the generated client.
-    resp, err := client.PostV1EchoWithResponse(context.Background(), request)
-    require.NoError(t, err)
-    require.Equal(t, http.StatusOK, resp.StatusCode())
+	// Invoke POST /v1/echo via the generated client.
+	resp, err := client.PostV1EchoWithResponse(context.Background(), request)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode())
 
-    // Confirm the server echoed back the same data.
-    require.NotNil(t, resp.JSON200)
-    require.Equal(t, request.Message, resp.JSON200.Message)
-    require.Equal(t, request.Author, resp.JSON200.Author)
+	// Confirm the server echoed back the same data.
+	require.NotNil(t, resp.JSON200)
+	require.Equal(t, message, *resp.JSON200.Message)
+	require.Equal(t, author, *resp.JSON200.Author)
 }
