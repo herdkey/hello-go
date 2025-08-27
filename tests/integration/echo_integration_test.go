@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
