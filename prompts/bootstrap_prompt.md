@@ -28,7 +28,7 @@ Scaffold a new Go project called `hello-go`.
 
 ### Testing
 - Use stdlib `testing` + **testify**.
-- (Skip functional/integration tests for now.)
+- (Skip integration tests for now.)
 
 ### IoC / DI
 - **No DI framework.**
