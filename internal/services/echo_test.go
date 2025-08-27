@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/herdkey/hello-go/internal/utils"
 )
 
 func TestEchoService_Echo(t *testing.T) {
@@ -17,7 +16,7 @@ func TestEchoService_Echo(t *testing.T) {
 		Level: slog.LevelError,
 	}))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	tests := []struct {
 		expected api.EchoMessage
@@ -48,7 +47,7 @@ func TestEchoService_Echo(t *testing.T) {
 		},
 		{
 			name: "special characters",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
@@ -72,7 +71,7 @@ func TestEchoService_Echo(t *testing.T) {
 func TestNewEchoService(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	require.NotNil(t, service)
 	assert.NotNil(t, service.logger)
