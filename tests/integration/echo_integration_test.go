@@ -18,17 +18,17 @@ func TestPOSTEcho(t *testing.T) {
 	message := "Hello, Echo!"
 	author := "IntegrationTest"
 	request := api.EchoMessage{
-		Message: &message,
-		Author:  &author,
+		Message: message,
+		Author:  author,
 	}
 
 	// Invoke POST /v1/echo via the generated client.
-	resp, err := client.PostV1EchoWithResponse(context.Background(), request)
+	resp, err := client.EchoWithResponse(context.Background(), request)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode())
 
 	// Confirm the server echoed back the same data.
 	require.NotNil(t, resp.JSON200)
-	require.Equal(t, message, *resp.JSON200.Message)
-	require.Equal(t, author, *resp.JSON200.Author)
+	require.Equal(t, message, resp.JSON200.Message)
+	require.Equal(t, author, resp.JSON200.Author)
 }
