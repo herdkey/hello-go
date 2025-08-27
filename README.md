@@ -18,7 +18,7 @@ The service exposes a single `POST /v1/echo` endpoint that echoes back JSON inpu
 
 - **Go 1.24.6** (with `toolchain go1.24.6`)
 - **Router:** [`chi`](https://github.com/go-chi/chi)
-- **CLI & Config:** [`cobra`](https://github.com/spf13/cobra) + [`viper`](https://github.com/spf13/viper), with envdir support
+- **Koanf:** [`koanf`](https://github.com/knadh/koanf) for configuration
 - **OpenAPI:** [`oapi-codegen`](https://github.com/deepmap/oapi-codegen) for types, Chi server, and client
 - **Validation:** [`kin-openapi`](https://github.com/getkin/kin-openapi) (request/response validation in dev/CI)
 - **Logging:** Go’s standard `slog`, with `"json"` (prod) and `"text"` (dev) modes
