@@ -22,7 +22,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	}))
 
 	echoService := services.NewEchoService(logger)
-	handler := NewEchoHandler(echoService, logger)
+	handler := handlers.NewEchoHandler(echoService, logger)
 
 	tests := []struct {
 		requestBody    interface{}
