@@ -46,23 +46,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EchoRequest'
+              $ref: '#/components/schemas/EchoMessage'
       responses:
         '200':
           description: Echo response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EchoResponse'
+                $ref: '#/components/schemas/EchoMessage'
         '400':
           description: Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
-    EchoRequest:
+    EchoMessage:
       type: object
       required:
         - message
@@ -74,16 +74,7 @@ components:
         author:
           type: string
           description: The author of the message
-    EchoResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: The echoed message
-        author:
-          type: string
-          description: The author of the message
-    ErrorResponse:
+    Error:
       type: object
       properties:
         error:

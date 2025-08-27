@@ -9,10 +9,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/herdkey/hello-go/internal/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/herdkey/hello-go/internal/api"
 	"github.com/herdkey/hello-go/internal/services"
 )
 
