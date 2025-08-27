@@ -16,7 +16,7 @@ func TestEchoService_Echo(t *testing.T) {
 		Level: slog.LevelError,
 	}))
 
-	service := services.NewEchoService(logger)
+	service := NewEchoService(logger)
 
 	tests := []struct {
 		expected api.EchoMessage
@@ -71,7 +71,7 @@ func TestEchoService_Echo(t *testing.T) {
 func TestNewEchoService(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	service := services.NewEchoService(logger)
+	service := NewEchoService(logger)
 
 	require.NotNil(t, service)
 	assert.NotNil(t, service.logger)
