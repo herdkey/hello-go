@@ -50,7 +50,7 @@ install:
 install-tools:
     mkdir -p "$GOBIN"
     @if [ "{{ci_mode}}" = "true" ]; then \
-        go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.4.0; \
+        go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.4.0; \
     fi
     go get -tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
