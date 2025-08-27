@@ -20,30 +20,30 @@ func TestEchoService_Echo(t *testing.T) {
 	service := NewEchoService(logger)
 
 	tests := []struct {
-		expected api.EchoResponse
-		request  api.EchoRequest
+		expected api.EchoMessage
+		request  api.EchoMessage
 		name     string
 	}{
 		{
 			name: "successful echo",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr("Hello, World!"),
-				Author:  utils.StringPtr("Alice"),
+			expected: api.EchoMessage{
+				Message: "Hello, World!",
+				Author:  "Alice",
 			},
 		},
 		{
 			name: "empty message and author",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "",
 				Author:  "",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr(""),
-				Author:  utils.StringPtr(""),
+			expected: api.EchoMessage{
+				Message: "",
+				Author:  "",
 			},
 		},
 		{
@@ -52,9 +52,9 @@ func TestEchoService_Echo(t *testing.T) {
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr("Hello! @#$%^&*()"),
-				Author:  utils.StringPtr("User123"),
+			expected: api.EchoMessage{
+				Message: "Hello! @#$%^&*()",
+				Author:  "User123",
 			},
 		},
 	}
