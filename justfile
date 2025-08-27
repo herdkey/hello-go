@@ -26,7 +26,7 @@ ci-setup: install install-tools generate
 
 # Run linter
 lint args='':
-    #!/usr/bin/env -S zsh -eu -o pipefail
+    #!/usr/bin/env -S bash -eu -o pipefail
     args="{{args}}"
     fix_flag=""
     if [[ "{{dev_mode}}" == "true" ]]; then
