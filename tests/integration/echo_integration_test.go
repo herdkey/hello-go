@@ -7,7 +7,7 @@ import (
 
     "github.com/stretchr/testify/require"
     // Adjust the import below to match your actual module path.
-    "github.com/your-module-name/internal/api"
+    "example.com/project/internal/api"
 )
 
 func TestPOSTEcho(t *testing.T) {
