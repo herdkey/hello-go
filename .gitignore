@@ -12,7 +12,7 @@ Thumbs.db
 
 # Config
 /config.private.yaml
-/tests/functional/config/private.yaml
+/tests/integration/config/private.yaml
 
 # Build artifacts
 /bin/

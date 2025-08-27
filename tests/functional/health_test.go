@@ -1,4 +1,4 @@
-package functional
+package integration
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/herdkey/hello-go/internal/handlers"
-	"github.com/herdkey/hello-go/tests/functional/config"
+	"github.com/herdkey/hello-go/tests/integration/config"
 )
 
 func TestHealthEndpoint(t *testing.T) {

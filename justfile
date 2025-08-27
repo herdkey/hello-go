@@ -15,10 +15,10 @@ build:
 
 # Run tests
 test:
-    go test $(go list ./... | grep -v 'tests/functional')
+    go test $(go list ./... | grep -v 'tests/integration')
 
-functional-test:
-    go test ./tests/functional/...
+integration-test:
+    go test ./tests/integration/...
 
 # Run linter
 lint args='':
