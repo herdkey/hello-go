@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"log/slog"
@@ -8,9 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/herdkey/hello-go/internal/utils"
-
 	"github.com/herdkey/hello-go/internal/api"
+	services "github.com/herdkey/hello-go/internal/services"
 )
 
 func TestEchoService_Echo(t *testing.T) {
@@ -18,44 +17,44 @@ func TestEchoService_Echo(t *testing.T) {
 		Level: slog.LevelError,
 	}))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	tests := []struct {
-		expected api.EchoResponse
-		request  api.EchoRequest
+		expected api.EchoMessage
+		request  api.EchoMessage
 		name     string
 	}{
 		{
 			name: "successful echo",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr("Hello, World!"),
-				Author:  utils.StringPtr("Alice"),
+			expected: api.EchoMessage{
+				Message: "Hello, World!",
+				Author:  "Alice",
 			},
 		},
 		{
 			name: "empty message and author",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "",
 				Author:  "",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr(""),
-				Author:  utils.StringPtr(""),
+			expected: api.EchoMessage{
+				Message: "",
+				Author:  "",
 			},
 		},
 		{
 			name: "special characters",
-			request: api.EchoRequest{
+			request: api.EchoMessage{
 				Message: "Hello! @#$%^&*()",
 				Author:  "User123",
 			},
-			expected: api.EchoResponse{
-				Message: utils.StringPtr("Hello! @#$%^&*()"),
-				Author:  utils.StringPtr("User123"),
+			expected: api.EchoMessage{
+				Message: "Hello! @#$%^&*()",
+				Author:  "User123",
 			},
 		},
 	}
@@ -73,8 +72,7 @@ func TestEchoService_Echo(t *testing.T) {
 func TestNewEchoService(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	service := NewEchoService(logger)
+	service := services.NewEchoService(logger)
 
 	require.NotNil(t, service)
-	assert.NotNil(t, service.logger)
 }

@@ -19,14 +19,14 @@ func NewEchoService(logger *slog.Logger) *EchoService {
 }
 
 // Echo processes the EchoRequest and returns an EchoResponse.
-func (s *EchoService) Echo(req api.EchoRequest) api.EchoResponse {
+func (s *EchoService) Echo(msg api.EchoMessage) api.EchoMessage {
 	s.logger.Info("Processing echo request",
-		"message", req.Message,
-		"author", req.Author,
+		"message", msg.Message,
+		"author", msg.Author,
 	)
 
-	return api.EchoResponse{
-		Message: &req.Message,
-		Author:  &req.Author,
+	return api.EchoMessage{
+		Message: msg.Message,
+		Author:  msg.Author,
 	}
 }

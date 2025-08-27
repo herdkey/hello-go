@@ -32,7 +32,7 @@ lint args='':
 
 # Generate code from OpenAPI spec
 generate:
-    go generate ./internal/api
+    go generate ./api
 
 # Clean build artifacts
 clean:

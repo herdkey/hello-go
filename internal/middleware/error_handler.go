@@ -33,7 +33,7 @@ func (eh *ErrorHandler) ServeHTTP(next http.Handler) http.Handler {
 }
 
 func writeErrorResponse(w http.ResponseWriter, statusCode int, errorMessage string, logger *slog.Logger) {
-	errorResp := api.ErrorResponse{
+	errorResp := api.Error{
 		Error: &errorMessage,
 	}
 

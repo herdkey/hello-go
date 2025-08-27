@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/herdkey/hello-go/internal/api"
+
 	"github.com/herdkey/hello-go/internal/services"
 )
 
@@ -33,7 +34,7 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 	}{
 		{
 			name: "successful echo",
-			requestBody: api.EchoRequest{
+			requestBody: api.EchoMessage{
 				Message: "Hello, World!",
 				Author:  "Alice",
 			},
@@ -94,18 +95,18 @@ func TestEchoHandler_PostV1Echo(t *testing.T) {
 			assert.Equal(t, tt.expectedStatus, w.Code)
 
 			if tt.expectedStatus == http.StatusOK {
-				var response api.EchoResponse
+				var response api.EchoMessage
 				err := json.NewDecoder(w.Body).Decode(&response)
 				require.NoError(t, err)
 
-				var expectedResponse api.EchoResponse
+				var expectedResponse api.EchoMessage
 				err = json.Unmarshal([]byte(tt.expectedBody), &expectedResponse)
 				require.NoError(t, err)
 
 				assert.Equal(t, expectedResponse.Message, response.Message)
 				assert.Equal(t, expectedResponse.Author, response.Author)
 			} else {
-				var errorResp api.ErrorResponse
+				var errorResp api.Error
 				err := json.NewDecoder(w.Body).Decode(&errorResp)
 				require.NoError(t, err)
 
