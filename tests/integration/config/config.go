@@ -18,7 +18,7 @@ type ServerConfig struct {
 }
 
 func (s *ServerConfig) URL() string {
-    return fmt.Sprintf("http://%s:%d", s.Host, s.Port)
+	return fmt.Sprintf("http://%s:%d", s.Host, s.Port)
 }
 
 func LoadConfig() (*Config, error) {
