@@ -25,11 +25,24 @@ jobs:
       - name: CI Setup
         run: just ci-setup
 
+      # Make sure the checked-in generated files are up to date
+      # (generate is run as part of the CI setup step above)
+      - name: Verify generate
+        run: |
+          git diff --name-only
+          git diff --exit-code
+
+      # Make sure go mod tidy has been run
+      - name: Verify go.mod/go.sum tidy
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+      - name: Lint
+        run: just lint
+
       - name: Run tests
         run: just test
 
       - name: Build
         run: just build
-
-      - name: Lint
-        run: just lint
