@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/env"
+	"github.com/knadh/koanf/providers/env/v2"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
 )
@@ -47,9 +47,16 @@ func Load() (*Config, error) {
 	_ = k.Load(file.Provider("./configs/private.yaml"), yaml.Parser())
 
 	// Load environment variables
-	err := k.Load(env.Provider("APP_", ".", func(s string) string {
-		return strings.ReplaceAll(strings.ToLower(s), "_", ".")
-	}), nil)
+	provider := env.Provider(
+		".",
+		env.Opt{
+			Prefix: "APP_",
+			TransformFunc: func(k, v string) (string, any) {
+				return strings.ReplaceAll(strings.ToLower(k), "_", "."), v
+			},
+		},
+	)
+	err := k.Load(provider, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to bind environment variables: %w", err)
 	}

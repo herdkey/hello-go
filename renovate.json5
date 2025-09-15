@@ -22,7 +22,7 @@
       "matchManagers": ["gomod"],
       "groupName": "go-deps",
       "separateMajorMinor": true,
-      "postUpdateOptions": ["gomodTidy"]
+      "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
     },
     {
       "description": "Group Docker images",
