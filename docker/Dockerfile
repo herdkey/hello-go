@@ -1,5 +1,8 @@
+# Set by .envrc via direnv
+ARG GO_VERSION
+
 # Build stage
-FROM golang:1.24.6-alpine AS builder
+FROM golang:${GO_VERSION}-alpine AS builder
 
 # Install git and other build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
@@ -8,23 +11,25 @@ RUN apk add --no-cache git ca-certificates tzdata
 WORKDIR /app
 
 # Copy go mod and sum files
-COPY go.mod go.sum config.default.yaml ./
+COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
 # Copy source code
+COPY configs/default.yaml configs/default.yaml
 COPY "./cmd" "./cmd"
 COPY ./internal ./internal
 COPY ./api ./api
+RUN mkdir bin
 
 # Build the application with CGO disabled for a static binary
+# NOTE: -s -w remove debugging info so will make attaching a debugger impossible
 RUN CGO_ENABLED=0 GOOS=linux \
     go build -a \
-    -installsuffix cgo \
-    -ldflags '-extldflags "-static"' \
+    -ldflags '-s -w -extldflags=-static' \
     -o bin/hello-go \
-    ./cmd/hello-go
+    "./cmd/hello-go"
 
 # Final stage
 FROM scratch
@@ -39,7 +44,7 @@ COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /app/bin/hello-go /hello-go
 
 # Copy config file
-COPY --from=builder /app/config.default.yaml /config.default.yaml
+COPY --from=builder /app/configs/default.yaml /configs/default.yaml
 
 # Expose port
 EXPOSE 8080

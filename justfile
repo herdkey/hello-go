@@ -1,3 +1,6 @@
+# Use zsh and fail immediately on errors
+set shell := ["/usr/bin/env", "bash", "-euo", "pipefail", "-c"]
+
 # ---- Tool binary location ----
 # Put Go tools in a repo-local .bin
 export GOBIN := justfile_directory() + "/.bin"
@@ -78,3 +81,6 @@ build-run: build
 test-coverage:
     go test -v -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
+
+docker-build:
+    docker compose -f 'docker/compose.yml' build
