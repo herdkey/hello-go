@@ -1,50 +1,40 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base", "config:recommended", "schedule:weekly"],
+  "extends": ["config:recommended"],
   "timezone": "America/Los_Angeles",
-
-  "enabledManagers": ["gomod", "dockerfile", "docker-compose", "github-actions"],
+  "enabledManagers": [
+    "gomod",
+    "dockerfile",
+    "docker-compose",
+    "github-actions"
+  ],
   "labels": ["deps"],
   "dependencyDashboard": true,
   "prHourlyLimit": 4,
   "prConcurrentLimit": 10,
   "rebaseWhen": "behind-base-branch",
   "rangeStrategy": "bump",
+  "automerge": false,
 
   "packageRules": [
     {
-      "description": "Group ALL Go deps; tidy; split majors from minors/patches",
+      "description": "Group Go deps; tidy; split majors from minors/patches",
       "matchManagers": ["gomod"],
       "groupName": "go-deps",
       "separateMajorMinor": true,
       "postUpdateOptions": ["gomodTidy"]
     },
     {
-      "description": "Automerge safe Go updates",
-      "matchManagers": ["gomod"],
-      "groupName": "go-deps",
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true
-    },
-    {
-      "description": "Never automerge majors (any ecosystem)",
-      "matchUpdateTypes": ["major"],
-      "automerge": false
-    },
-
-    {
-      "description": "Docker images grouped",
+      "description": "Group Docker images",
       "matchDatasources": ["docker"],
       "groupName": "docker-images",
-      "matchUpdateTypes": ["digest", "patch", "minor"],
-      "automerge": true
+      "separateMajorMinor": true
     },
     {
-      "description": "GitHub Actions grouped",
+      "description": "Group GitHub Actions",
       "matchManagers": ["github-actions"],
       "groupName": "github-actions",
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true
-    },
+      "separateMajorMinor": true
+    }
   ]
 }
