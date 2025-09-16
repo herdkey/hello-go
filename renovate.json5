@@ -1,40 +1,6 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "timezone": "America/Los_Angeles",
-  "enabledManagers": [
-    "gomod",
-    "dockerfile",
-    "docker-compose",
-    "github-actions"
+  extends: [
+    "github>herdkey/renovate-config//renovate/presets/base.json5#v1",
+    "github>herdkey/renovate-config//renovate/presets/go.json5#v1",
   ],
-  "labels": ["deps"],
-  "dependencyDashboard": true,
-  "prHourlyLimit": 4,
-  "prConcurrentLimit": 10,
-  "rebaseWhen": "behind-base-branch",
-  "rangeStrategy": "bump",
-  "automerge": false,
-
-  "packageRules": [
-    {
-      "description": "Group Go deps; tidy; split majors from minors/patches",
-      "matchManagers": ["gomod"],
-      "groupName": "go-deps",
-      "separateMajorMinor": true,
-      "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
-    },
-    {
-      "description": "Group Docker images",
-      "matchDatasources": ["docker"],
-      "groupName": "docker-images",
-      "separateMajorMinor": true
-    },
-    {
-      "description": "Group GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "groupName": "github-actions",
-      "separateMajorMinor": true
-    }
-  ]
 }
