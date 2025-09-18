@@ -1,0 +1,8 @@
+name: 'Debug OIDC'
+description: 'Fetch and print GitHub OIDC token claims (JWT payload).'
+runs:
+  using: composite
+  steps:
+    - name: Print OIDC claims
+      shell: bash
+      run: $GITHUB_ACTION_PATH/debug-oidc.sh

@@ -1,4 +1,4 @@
-# Use zsh and fail immediately on errors
+# Use bash and fail immediately on errors
 set shell := ["/usr/bin/env", "bash", "-euo", "pipefail", "-c"]
 
 # ---- Tool binary location ----

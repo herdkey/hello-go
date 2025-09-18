@@ -2,14 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+env:
+  AWS_REGION: us-west-2
+  INFRA_AWS_ACCOUNT_ID: "073835883885"
 
 jobs:
   build-test-lint:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -46,3 +49,85 @@ jobs:
 
       - name: Build
         run: just build
+
+  docker-build-push:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      env_name: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # GITHUB_REPOSITORY is in the format "owner/repo" so extract the repo name
+      - name: Get repo slug
+        run: |
+          echo "REPO_SLUG=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.INFRA_AWS_ACCOUNT_ID }}:role/github-repo-${{ env.REPO_SLUG }}-${{ env.env_name }}
+          role-session-name: ${{ env.REPO_SLUG }}-ci
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 3600
+
+      - name: Debug OIDC
+        uses: ./.github/actions/debug-oidc
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names "${{ env.env_name }}/$REPO_SLUG/api" || \
+          aws ecr create-repository --repository-name "${{ env.env_name }}/$REPO_SLUG/api"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set go version
+        run: |
+          echo "GO_VERSION=$(go list -m -f '{{.GoVersion}}')" >> $GITHUB_ENV
+          echo "Using Go version: ${{ env.GO_VERSION }}"
+
+      - name: Set short SHA + branch
+        run: |
+          # take the first 7 chars of the full commit SHA (shorter, still unique enough for dev)
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+
+          # GITHUB_REF_NAME is just the branch name or "<pr_number>/merge" for PRs.
+          # Replace all '/' with '-' so tags are safe (bash pattern replace: ${var//from/to})
+          BRANCH="${GITHUB_REF_NAME//\//-}"
+
+          # Lowercase the branch name (bash parameter expansion: ${var,,})
+          BRANCH="${BRANCH,,}"
+
+          # Export vars to later GitHub Actions steps by appending to the special file $GITHUB_ENV.
+          # `echo "KEY=val" >> $GITHUB_ENV` is the supported way to set env vars in Actions.
+          echo "SHORT_SHA=$SHORT_SHA" >> "$GITHUB_ENV"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      - name: Build and push to ECR (branch + sha)
+        run: |
+          # Use the env vars we set earlier (GITHUB_ENV makes them available to subsequent steps)
+          IMAGE_BASE="${{ steps.login-ecr.outputs.registry }}/${{ env.env_name }}/${{ env.REPO_SLUG }}/api"
+
+          # branch tag is mutable (overwritten each push)
+          BRANCH_TAG="${IMAGE_BASE}:${BRANCH}"
+
+          # immutable canonical tag
+          SHA_TAG="${IMAGE_BASE}:${SHORT_SHA}"
+
+          # Build once but apply two tags by passing -t twice.
+          # Docker accepts multiple -t flags; both tags point to the same image ID.
+          docker build \
+            --build-arg GO_VERSION="$GO_VERSION" \
+            -f docker/Dockerfile \
+            -t "$BRANCH_TAG" -t "$SHA_TAG" .
+
+          # Push the mutable branch tag (for convenience) first, then the mutable SHA tag
+          # Both pushes push the same image layers; ECR deduplicates by layer digest.
+          docker push "$BRANCH_TAG"
+          docker push "$SHA_TAG"
