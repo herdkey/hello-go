@@ -68,7 +68,7 @@ jobs:
           echo "REPO_SLUG=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
 
       - name: Configure AWS Credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: arn:aws:iam::${{ env.INFRA_AWS_ACCOUNT_ID }}:role/github-repo-${{ env.REPO_SLUG }}-${{ env.env_name }}
           role-session-name: ${{ env.REPO_SLUG }}-ci
