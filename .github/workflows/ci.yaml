@@ -16,7 +16,7 @@ jobs:
   # Upload the built binary as an artifact
   build:
     name: Build & Test
-    uses: herdkey/github-actions/.github/workflows/go-build.yml@sav-6-common-go-actions
+    uses: herdkey/github-actions/.github/workflows/go-build.yml@v1
     with:
       build-artifact-name: &build_artifact_name hello-go-api
       build-output-file: ./bin/hello-go-api
@@ -24,7 +24,7 @@ jobs:
   # Build and push the Docker image
   docker-build-push:
     name: Docker Build & Push
-    uses: herdkey/github-actions/.github/workflows/docker-build-push.yml@sav-6-common-go-actions
+    uses: herdkey/github-actions/.github/workflows/docker-build-push.yml@v1
     needs: build
     with:
       local-image-tag: 'hello-go-api:latest'
