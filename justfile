@@ -10,11 +10,23 @@ ci_mode := env_var_or_default("CI", "false")
 dev_mode := if "{{ci_mode}}" == "true" { "false" } else { "true" }
 
 # Default recipe
-default: install install-tools generate build test lint
+default: setup build-dev lint test
 
-# Build the application
-build:
-    go build -o bin/hello-go ./cmd/hello-go
+# CI setup task
+setup: install install-tools generate
+    @echo "Setup complete."
+
+# Build the application for mac
+build-dev:
+    just build goos=darwin
+
+# Build the application (for linux, by default)
+build goos="linux":
+    GOOS="{{goos}}" GOARCH=amd64 CGO_ENABLED=0 \
+    go build -a \
+    -ldflags '-s -w -extldflags=-static' \
+    -o bin/hello-go-api \
+    ./cmd/hello-go
 
 # Run tests
 test:
@@ -22,10 +34,6 @@ test:
 
 integration-test:
     go test ./tests/integration/...
-
-# CI setup task
-ci-setup: install install-tools generate
-    @echo "CI setup complete."
 
 # Run linter
 lint args='':
@@ -74,13 +82,13 @@ dev:
     go run ./cmd/hello-go serve
 
 # Build and run
-build-run: build
-    ./bin/hello-go serve
+build-run-dev: build-dev
+    ./bin/hello-go-api serve
 
 # Test with coverage
 test-coverage:
     go test -v -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
 
-docker-build:
-    docker compose -f 'docker/compose.yml' build
+docker-build: build
+    ./scripts/docker_build.sh

@@ -65,7 +65,7 @@ Scaffold a new Go project called `hello-go`.
 - A working server:
   ```sh
   make generate
-  go run ./cmd/hello-go serve
+  go run ./cmd/hello-go-api serve
 - Working unit tests, `just` targets, observability, logs, configuration, etc.
 - Working docker image & compose file.
 
