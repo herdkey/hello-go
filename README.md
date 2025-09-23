@@ -19,7 +19,7 @@ The service exposes a single `POST /v1/echo` endpoint that echoes back JSON inpu
 - **Go 1.24.6** (with `toolchain go1.24.6`)
 - **Router:** [`chi`](https://github.com/go-chi/chi)
 - **Koanf:** [`koanf`](https://github.com/knadh/koanf) for configuration
-- **OpenAPI:** [`oapi-codegen`](https://github.com/deepmap/oapi-codegen) for types, Chi server, and client
+- **OpenAPI:** [`oapi-codegen`](https://github.com/oapi-codegen/oapi-codegen) for types, Chi server, and client
 - **Validation:** [`kin-openapi`](https://github.com/getkin/kin-openapi) (request/response validation in dev/CI)
 - **Logging:** Go’s standard `slog`, with `"json"` (prod) and `"text"` (dev) modes
 - **Observability:** [OpenTelemetry](https://opentelemetry.io/) with `otelhttp` middleware
@@ -47,6 +47,8 @@ Install the following packages with brew:
 - `direnv`
 
 ## Running
+
+Clone [just-common](https://github.com/herdkey/just-common) and set `JUST_COMMON_ROOT` to the root of that repo. From the root of this project (hello-go), run this: `"$JUST_COMMON_ROOT/link.py"`
 
 Run default task:
 ```shell

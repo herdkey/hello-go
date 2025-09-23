@@ -18,8 +18,8 @@ jobs:
     name: Build & Test
     uses: herdkey/github-actions/.github/workflows/go-build.yml@v1
     with:
-      build-artifact-name: &build_artifact_name hello-go-api
-      build-output-file: ./bin/hello-go-api
+      build-artifact-name: &build_artifact_name api
+      build-output-file: ./bin/api
 
   # Build and push the Docker image
   docker-build-push:
