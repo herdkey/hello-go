@@ -15,7 +15,7 @@ COPY --from=assets /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=assets /usr/share/zoneinfo /usr/share/zoneinfo
 
 # Copy the binary
-COPY bin/hello-go-api .
+COPY bin/api .
 
 # Copy config file
 COPY configs/default.yaml configs/default.yaml
