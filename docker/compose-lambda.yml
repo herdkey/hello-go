@@ -1,0 +1,25 @@
+services:
+  hello-go-lambda:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.lambda
+      platforms:
+        - linux/amd64
+      args:
+        GO_VERSION: ${GO_VERSION}
+      tags:
+        - hello-go-lambda:local
+    ports:
+      - "9000:8080"
+    environment:
+      - APP_LOGGING_LEVEL=info
+      - APP_LOGGING_FORMAT=json
+      - APP_TELEMETRY_ENABLED=true
+    entrypoint: ["/usr/local/bin/aws-lambda-rie", "./main"]
+    restart: unless-stopped
+    networks:
+      - hello-go-lambda-network
+
+networks:
+  hello-go-lambda-network:
+    driver: bridge
