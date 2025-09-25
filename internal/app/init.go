@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/herdkey/hello-go/internal/config"
 	"github.com/herdkey/hello-go/internal/httpserver"
 	"github.com/herdkey/hello-go/internal/logging"
