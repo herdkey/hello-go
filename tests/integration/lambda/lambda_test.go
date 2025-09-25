@@ -26,10 +26,10 @@ type RequestContext struct {
 }
 
 type LambdaResponse struct {
-	StatusCode        int                 `json:"statusCode"`
 	Headers           map[string]string   `json:"headers"`
 	MultiValueHeaders map[string][]string `json:"multiValueHeaders"`
 	Body              string              `json:"body"`
+	StatusCode        int                 `json:"statusCode"`
 }
 
 func TestLambdaHealthEndpoint(t *testing.T) {
