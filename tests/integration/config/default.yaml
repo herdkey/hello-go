@@ -1,3 +1,7 @@
 server:
   host: "localhost"
   port: 8080
+
+lambda:
+  host: "localhost"
+  port: 9000

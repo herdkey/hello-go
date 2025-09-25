@@ -13,8 +13,7 @@ import (
 
 func TestPOSTEcho(t *testing.T) {
 	// Load configuration
-	cfg, err := config.LoadConfig()
-	require.NoError(t, err)
+	cfg := config.LoadConfig(t)
 
 	// Create the generated client (point to correct server address).
 	client, err := api.NewClientWithResponses(cfg.Server.URL())

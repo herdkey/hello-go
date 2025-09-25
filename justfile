@@ -12,7 +12,22 @@ build-lambda: (build_cmd "lambda")
 docker-build: build
     "{{ justfile_dir() }}/scripts/docker_build.sh"
 
-# Build Lambda Docker image
+# Build Lambda docker image
 [group('docker')]
 docker-build-lambda: build-lambda
-    docker buildx build --platform linux/amd64 --provenance=false -f docker/Dockerfile.lambda -t hello-go-lambda:local .
+    "{{ justfile_dir() }}/scripts/docker_build_lambda.sh"
+
+# Start API docker image
+[group('docker')]
+docker-up: docker-build
+    docker compose -f docker/compose.yml up -d
+
+# Start Lambda docker image
+[group('docker')]
+docker-up-lambda: docker-build-lambda
+    docker compose -f docker/compose-lambda.yml up -d
+
+# Run Lambda integration tests (assumes Lambda is already running)
+[group('test')]
+test-lambda:
+    go test -v ./tests/integration/lambda_test.go
