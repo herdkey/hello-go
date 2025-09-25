@@ -6,5 +6,5 @@ import (
 
 // Embed the OpenAPI specification file
 
-//go:embed openapi.yaml
+//go:embed openapi.yml
 var OpenAPISpec []byte

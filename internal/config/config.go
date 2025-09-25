@@ -40,11 +40,11 @@ func Load() (*Config, error) {
 	k := koanf.New(".")
 
 	// Load base files in desired sequence
-	if err := k.Load(file.Provider("./configs/default.yaml"), yaml.Parser()); err != nil {
+	if err := k.Load(file.Provider("./configs/default.yml"), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("failed to load default config: %w", err)
 	}
-	_ = k.Load(file.Provider("./configs/local.yaml"), yaml.Parser())
-	_ = k.Load(file.Provider("./configs/private.yaml"), yaml.Parser())
+	_ = k.Load(file.Provider("./configs/local.yml"), yaml.Parser())
+	_ = k.Load(file.Provider("./configs/private.yml"), yaml.Parser())
 
 	// Load environment variables
 	provider := env.Provider(

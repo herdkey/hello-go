@@ -2,6 +2,8 @@ package config
 
 import (
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 
@@ -41,19 +43,29 @@ func (l *LambdaConfig) InvocationURL() string {
 
 func loadConfig() (*Config, error) {
 	k := koanf.New(".")
-	if err := k.Load(file.Provider("./config/default.yaml"), yaml.Parser()); err != nil {
+	if err := k.Load(file.Provider(filepath.Join(configDir(), "default.yml")), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error reading default config: %w", err)
 	}
 	// Attempt local merge
-	_ = k.Load(file.Provider("./config/local.yaml"), yaml.Parser())
+	_ = k.Load(file.Provider(filepath.Join(configDir(), "local.yml")), yaml.Parser())
 	// Attempt private merge
-	_ = k.Load(file.Provider("./config/private.yaml"), yaml.Parser())
+	_ = k.Load(file.Provider(filepath.Join(configDir(), "private.yml")), yaml.Parser())
 
 	var cfg Config
 	if err := k.Unmarshal("", &cfg); err != nil {
 		return nil, fmt.Errorf("unable to decode config into struct: %w", err)
 	}
 	return &cfg, nil
+}
+
+func configDir() string {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Could not get current file info")
+	}
+
+	dir := filepath.Dir(filename)
+	return filepath.Clean(dir)
 }
 
 // LoadConfig loads the config once and returns it.

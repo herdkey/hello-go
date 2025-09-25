@@ -1,5 +1,7 @@
+name: hello-go-lambda
+
 services:
-  hello-go-lambda:
+  lambda:
     build:
       context: ../..
       dockerfile: docker/lambda/Dockerfile

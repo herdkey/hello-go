@@ -18,15 +18,11 @@ COPY --from=assets /usr/share/zoneinfo /usr/share/zoneinfo
 COPY bin/api .
 
 # Copy config file
-COPY configs/default.yaml configs/default.yaml
+COPY configs/default.yml configs/default.yml
 
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["./hello-go-api", "--help"]
-
 # Run the binary
-ENTRYPOINT ["./hello-go-api"]
+ENTRYPOINT ["./api"]
 CMD ["serve"]

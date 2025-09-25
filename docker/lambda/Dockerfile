@@ -18,7 +18,7 @@ COPY --from=assets /usr/share/zoneinfo /usr/share/zoneinfo
 COPY bin/lambda ./main
 
 # Copy config file
-COPY configs/default.yaml configs/default.yaml
+COPY configs/default.yml configs/default.yml
 
 # Set the CMD to the handler
 CMD ["./main"]

@@ -1,5 +1,7 @@
+name: hello-go-api
+
 services:
-  hello-go-api:
+  api:
     build:
       context: ../..
       dockerfile: docker/api/Dockerfile

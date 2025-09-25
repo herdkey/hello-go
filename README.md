@@ -35,7 +35,7 @@ The service exposes a single `POST /v1/echo` endpoint that echoes back JSON inpu
 - `POST /v1/echo` — Echo a JSON body `{"message": "...", "author": "..."}`
 - `GET /healthz` — Liveness probe
 - `GET /readyz` — Readiness probe
-- `GET /api/openapi.yaml` — Serve the OpenAPI specification
+- `GET /api/openapi.yml` — Serve the OpenAPI specification
 
 ---
 
