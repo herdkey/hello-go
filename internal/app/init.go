@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/herdkey/hello-go/internal/config"
-	"github.com/herdkey/hello-go/internal/handlers"
 	"github.com/herdkey/hello-go/internal/httpserver"
 	"github.com/herdkey/hello-go/internal/logging"
-	"github.com/herdkey/hello-go/internal/services"
+	"github.com/herdkey/hello-go/internal/router"
 	"github.com/herdkey/hello-go/internal/telemetry"
 )
 
@@ -37,9 +34,9 @@ func Initialize(ctx context.Context) (*Application, error) {
 		return nil, fmt.Errorf("failed to setup telemetry: %w", err)
 	}
 
-	router := setupRouter(logger)
+	r := router.BuildRouter(logger)
 
-	server := httpserver.New(cfg.Server, router, logger)
+	server := httpserver.New(cfg.Server, r, logger)
 
 	return &Application{
 		Server:            server,
@@ -47,19 +44,6 @@ func Initialize(ctx context.Context) (*Application, error) {
 		Config:            cfg,
 		Logger:            logger,
 	}, nil
-}
-
-func setupRouter(logger *slog.Logger) chi.Router {
-	router := httpserver.NewRouter()
-
-	httpserver.AddHealthRoutes(router, logger)
-
-	echoService := services.NewEchoService(logger)
-	echoHandler := handlers.NewEchoHandler(echoService, logger)
-
-	router.Post("/v1/echo", echoHandler.PostV1Echo)
-
-	return router
 }
 
 func (app *Application) Shutdown(ctx context.Context) error {

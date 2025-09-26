@@ -67,13 +67,13 @@ func NewRouter() chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	// Serve openapi.yaml unconditionally
-	r.Get("/api/openapi.yaml", serveOpenAPISpec)
+	// Serve openapi.yml unconditionally
+	r.Get("/api/openapi.yml", serveOpenAPISpec)
 
 	return r
 }
 
-// serveOpenAPISpec handles the /api/openapi.yaml endpoint.
+// serveOpenAPISpec handles the /api/openapi.yml endpoint.
 func serveOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/x-yaml")
 	w.WriteHeader(http.StatusOK)

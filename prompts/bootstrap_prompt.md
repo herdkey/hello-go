@@ -8,14 +8,14 @@ Scaffold a new Go project called `hello-go`.
 ### HTTP & API
 - Use `net/http` + `chi`.
 - Add `/healthz` and `/readyz` endpoints.
-- API defined in `api/openapi.yaml`, embed with `go:embed`.
+- API defined in `api/openapi.yml`, embed with `go:embed`.
 - Use **oapi-codegen** to generate types, Chi server, and client.
-- Serve the spec at `/api/openapi.yaml`.
+- Serve the spec at `/api/openapi.yml`.
 - Implement one endpoint: `POST /v1/echo` → echoes JSON body, which contains two fields `message` and `author`.
 
 ### Config
 - Use **cobra** + **viper**.
-- Layered sources: `config.default.yaml` → envdir → env vars (prefix `APP_`) → flags.
+- Layered sources: `config.default.yml` → envdir → env vars (prefix `APP_`) → flags.
 
 ### Logging
 - Use **slog**.
@@ -44,7 +44,7 @@ Scaffold a new Go project called `hello-go`.
     - `internal/httpserver` (router, health, server)
     - `internal/handlers` (echo handler)
     - `internal/services` (echo service)
-    - `internal/embedfs` (embed openapi.yaml)
+    - `internal/embedfs` (embed openapi.yml)
     - `internal/api` (oapi-codegen output + generate.go)
     - `internal/app` (composition root init.go)
 

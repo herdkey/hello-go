@@ -1,8 +1,10 @@
+name: hello-go-api
+
 services:
-  hello-go-api:
+  api:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ../..
+      dockerfile: docker/api/Dockerfile
       args:
         GO_VERSION: ${GO_VERSION}
       tags:

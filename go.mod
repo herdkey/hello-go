@@ -3,6 +3,8 @@ module github.com/herdkey/hello-go
 go 1.25.1
 
 require (
+	github.com/aws/aws-lambda-go v1.49.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/knadh/koanf/parsers/yaml v1.1.0
 	github.com/knadh/koanf/providers/env/v2 v2.0.0

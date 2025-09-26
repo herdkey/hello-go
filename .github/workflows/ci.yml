@@ -29,6 +29,7 @@ jobs:
     with:
       local-image-tag: 'hello-go-api:latest'
       component: api
+      build-cmd: './docker/api/build.sh'
       artifact-name: *build_artifact_name
       artifact-path: './bin'
     permissions:

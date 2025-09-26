@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/herdkey/hello-go/internal/app"
+	"github.com/herdkey/hello-go/internal/config"
 )
 
 func main() {
@@ -29,6 +31,7 @@ func newRootCommand() *cobra.Command {
 	}
 
 	rootCmd.AddCommand(newServeCommand())
+	rootCmd.AddCommand(newHealthCommand())
 
 	return rootCmd
 }
@@ -80,5 +83,46 @@ func runServe(cmd *cobra.Command, args []string) error {
 		application.Logger.Info("Application shutdown complete")
 	}
 
+	return nil
+}
+
+func newHealthCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "health",
+		Short: "Check the health of the running server",
+		Long:  "Perform a health check against the running server using the same config",
+		RunE:  runHealth,
+	}
+}
+
+// runHealth performs a health check against the running server.
+// By building the health check into the server binary, we avoid installing
+// additional dependencies like curl/wget into the image.
+func runHealth(cmd *cobra.Command, args []string) error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	healthURL := fmt.Sprintf("http://%s/healthz", cfg.Server.Address())
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Get(healthURL)
+	if err != nil {
+		return fmt.Errorf("health check failed: %w", err)
+	}
+
+	//nolint:errcheck
+	//goland:noinspection GoUnhandledErrorResult
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("health check failed: server returned status %d", resp.StatusCode)
+	}
+
+	fmt.Println("Health check passed")
 	return nil
 }

@@ -1,4 +1,4 @@
-package integration
+package api
 
 import (
 	"encoding/json"
@@ -12,10 +12,7 @@ import (
 )
 
 func TestHealthEndpoint(t *testing.T) {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
+	cfg := config.LoadConfig(t)
 
 	baseURL := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
 	healthURL := fmt.Sprintf("%s/healthz", baseURL)
