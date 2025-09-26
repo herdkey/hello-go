@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -16,7 +18,11 @@ import (
 	"github.com/herdkey/hello-go/internal/telemetry"
 )
 
-var chiLambda *chiadapter.ChiLambda
+var (
+	chiLambda         *chiadapter.ChiLambda
+	telemetryProvider *telemetry.Provider
+	logger            *slog.Logger
+)
 
 func init() {
 	ctx := context.Background()
@@ -27,21 +33,30 @@ func init() {
 		os.Exit(1)
 	}
 
-	logger := logging.Setup(cfg.Logging)
+	logger = logging.Setup(cfg.Logging)
 
-	telemetryProvider, err := telemetry.Setup(ctx, cfg.Telemetry)
+	telemetryProvider, err = telemetry.Setup(ctx, cfg.Telemetry)
 	if err != nil {
 		logger.Error("failed to setup telemetry", "error", err)
 		os.Exit(1)
 	}
-	defer func() {
-		if shutdownErr := telemetryProvider.Shutdown(ctx); shutdownErr != nil {
-			logger.Error("failed to shutdown telemetry", "error", shutdownErr)
-		}
-	}()
 
 	r := router.BuildRouter(logger)
 	chiLambda = chiadapter.New(r.(*chi.Mux))
+
+	// Set up signal handler for graceful shutdown
+	go shutdownHook()
+}
+
+func shutdownHook() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	if shutdownErr := telemetryProvider.Shutdown(context.Background()); shutdownErr != nil {
+		logger.Error("failed to shutdown telemetry", "error", shutdownErr)
+	}
+	os.Exit(0)
 }
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
