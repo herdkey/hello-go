@@ -7,15 +7,15 @@ import '.justfiles/go/base.just'
 
 # Build for distribution
 [group('build')]
-build goos="linux": (build-cmd "api" goos)
+build-api goos="linux": (build-cmd "api" goos)
 
 [group('docker')]
-docker-build: build
+docker-build-api: build-api
     "{{ justfile_dir() }}/docker/api/build.sh"
 
 # Start API docker image
 [group('docker')]
-docker-up: docker-build
+docker-up-api: docker-build-api
     docker compose -f docker/api/compose.yml up -d
 
 
@@ -36,3 +36,11 @@ docker-build-lambda: build-lambda
 [group('docker')]
 docker-up-lambda: docker-build-lambda
     docker compose -f docker/lambda/compose.yml up -d
+
+################################################################################
+#                                Combined Build                                #
+################################################################################
+
+# Build all binaries
+[group('build')]
+build goos="linux": (build-api goos) (build-lambda goos)

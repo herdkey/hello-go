@@ -18,20 +18,25 @@ jobs:
     name: Build & Test
     uses: herdkey/github-actions/.github/workflows/go-build.yml@v1
     with:
-      build-artifact-name: &build_artifact_name api
-      build-output-file: ./bin/api
+      build-artifact-name: &build_artifact_name binaries
+      build-output-file: ./bin
 
   # Build and push the Docker image
   docker-build-push:
-    name: Docker Build & Push
+    name: Docker Build & Push (${{ matrix.component }})
     uses: herdkey/github-actions/.github/workflows/docker-build-push.yml@v1
     needs: build
+    strategy:
+      matrix:
+        component:
+          - api
+          - lambda
     with:
-      local-image-tag: 'hello-go-api:latest'
-      component: api
-      build-cmd: './docker/api/build.sh'
+      local-image-tag: 'hello-go-${{ matrix.component }}:latest'
+      component: ${{ matrix.component }}
+      build-cmd: './docker/${{ matrix.component }}/build.sh'
       artifact-name: *build_artifact_name
-      artifact-path: './bin'
+      artifact-path: ./bin
     permissions:
       contents: read
       # Required by the AWS OIDC provider

@@ -5,8 +5,6 @@ services:
     build:
       context: ../..
       dockerfile: docker/api/Dockerfile
-      args:
-        GO_VERSION: ${GO_VERSION}
       tags:
         - hello-go-api:latest
     ports:

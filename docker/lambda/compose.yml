@@ -7,13 +7,11 @@ services:
       dockerfile: docker/lambda/Dockerfile
       platforms:
         - linux/amd64
-      args:
-        GO_VERSION: ${GO_VERSION}
       # This is a new key
       # noinspection ComposeUnknownKeys
       provenance: false
       tags:
-        - hello-go-lambda:local
+        - hello-go-lambda:latest
     ports:
       - "9000:8080"
     environment:
