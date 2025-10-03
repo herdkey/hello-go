@@ -9,16 +9,20 @@
     "test": "vitest",
     "test:watch": "vitest watch",
     "test:coverage": "vitest --coverage",
-    "lint": "ESLINT_STRICT=true eslint . --fix --ext .ts,.js",
+    "lint": "eslint . --fix",
     "format": "prettier --write .",
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/eslint__js": "^9.14.0",
     "@types/node": "^24.6.2",
     "@vitest/ui": "^3.2.4",
     "aws-cdk": "^2.1029.4",
+    "eslint": "^9.36.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.45.0",
     "vitest": "^3.2.4"
   },
   "dependencies": {

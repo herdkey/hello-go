@@ -6,12 +6,12 @@ import { HelloGoStack } from '../lib/hello-go-stack';
 const app = new cdk.App();
 
 // Read context values
-const stage = app.node.tryGetContext('stage') || 'test';
-const namespace = app.node.tryGetContext('namespace');
-const pr = app.node.tryGetContext('pr');
-const sha = app.node.tryGetContext('sha');
-const expiresAt = app.node.tryGetContext('expires_at');
-const ecrImageUri = app.node.tryGetContext('ecr_image_uri');
+const stage = app.node.getContext('stage') as string;
+const namespace = app.node.tryGetContext('namespace') as string | undefined;
+const pr = app.node.tryGetContext('pr') as string | undefined;
+const sha = app.node.tryGetContext('sha') as string | undefined;
+const expiresAt = app.node.tryGetContext('expires_at') as string | undefined;
+const ecrImageUri = app.node.getContext('ecr_image_uri') as string;
 
 // Determine if this is an ephemeral deployment (test env with namespace)
 const isEphemeral = stage === 'test' && !!namespace;
@@ -30,9 +30,9 @@ const tags: Record<string, string> = {
 
 if (isEphemeral) {
   tags.ephemeral = 'true';
-  if (pr) tags.pr = pr;
-  if (sha) tags.sha = sha;
-  if (expiresAt) tags.expires_at = expiresAt;
+  if (pr) tags.pr = String(pr);
+  if (sha) tags.sha = String(sha);
+  if (expiresAt) tags.expires_at = String(expiresAt);
 }
 
 new HelloGoStack(app, stackName, {
