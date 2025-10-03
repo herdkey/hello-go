@@ -1,0 +1,16 @@
+import '../../.justfiles/go/base.just'
+
+# Make local node binaries available like npm does
+export PATH := "node_modules/.bin:" + env_var("PATH")
+
+bootstrap:
+    cdk bootstrap
+
+build:
+    tsc -p tsconfig.json5
+
+synth:
+    cdk synth
+
+deploy:
+    cdk deploy

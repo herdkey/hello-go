@@ -1,17 +1,16 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { HelloGoStack } from '../lib/hello-go-stack';
 
 const app = new cdk.App();
 
 // Read context values
-const stage = app.node.getContext('stage') as string;
+const stage = app.node.tryGetContext('stage') as string || "test";
 const namespace = app.node.tryGetContext('namespace') as string | undefined;
 const pr = app.node.tryGetContext('pr') as string | undefined;
 const sha = app.node.tryGetContext('sha') as string | undefined;
 const expiresAt = app.node.tryGetContext('expires_at') as string | undefined;
-const ecrImageUri = app.node.getContext('ecr_image_uri') as string;
+const ecrImageUri = app.node.tryGetContext('ecr_image_uri') as string || "073835883885.dkr.ecr.us-west-2.amazonaws.com/test/hello-go/lambda:fcb8742";
 
 // Determine if this is an ephemeral deployment (test env with namespace)
 const isEphemeral = stage === 'test' && !!namespace;

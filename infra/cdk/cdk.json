@@ -1,5 +1,5 @@
 {
-  "app": "pnpx ts-node --prefer-ts-exts bin/hello-go.ts",
+  "app": "pnpx tsx bin/hello-go.ts",
   "watch": {
     "include": ["**"],
     "exclude": [
