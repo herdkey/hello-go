@@ -47,7 +47,9 @@ export class HelloGoStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
         // CloudWatch Logs access
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          'service-role/AWSLambdaBasicExecutionRole',
+        ),
       ],
       description: `Execution role for ${lambdaName} Lambda`,
     });
@@ -62,26 +64,36 @@ export class HelloGoStack extends cdk.Stack {
     const { repoName, tag, accountId, region } = parseEcrImageUri(ecrImageUri);
 
     // Reference existing ECR repository
-    const repository = ecr.Repository.fromRepositoryAttributes(this, 'EcrRepository', {
-      repositoryName: repoName,
-      repositoryArn: `arn:aws:ecr:${region}:${accountId}:repository/${repoName}`,
-    });
+    const repository = ecr.Repository.fromRepositoryAttributes(
+      this,
+      'EcrRepository',
+      {
+        repositoryName: repoName,
+        repositoryArn: `arn:aws:ecr:${region}:${accountId}:repository/${repoName}`,
+      },
+    );
 
     // Create Lambda function from container image
-    const lambdaFunction = new lambda.DockerImageFunction(this, 'HelloGoLambda', {
-      functionName: lambdaName,
-      code: lambda.DockerImageCode.fromEcr(repository, { tagOrDigest: tag || 'latest' }),
-      role: lambdaRole,
-      memorySize: 256,
-      timeout: cdk.Duration.seconds(10),
-      description: `hello-go API Lambda for ${stage}${namespace ? ` (${namespace})` : ''}`,
-      logGroup: lambdaLogGroup,
-      // TODO: Optional VPC configuration
-      // Uncomment and configure the following to wire Lambda into a VPC:
-      // vpc: ec2.Vpc.fromLookup(this, 'Vpc', { vpcId: 'vpc-xxxxx' }),
-      // vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-      // securityGroups: [/* your security groups */],
-    });
+    const lambdaFunction = new lambda.DockerImageFunction(
+      this,
+      'HelloGoLambda',
+      {
+        functionName: lambdaName,
+        code: lambda.DockerImageCode.fromEcr(repository, {
+          tagOrDigest: tag || 'latest',
+        }),
+        role: lambdaRole,
+        memorySize: 256,
+        timeout: cdk.Duration.seconds(10),
+        description: `hello-go API Lambda for ${stage}${namespace ? ` (${namespace})` : ''}`,
+        logGroup: lambdaLogGroup,
+        // TODO: Optional VPC configuration
+        // Uncomment and configure the following to wire Lambda into a VPC:
+        // vpc: ec2.Vpc.fromLookup(this, 'Vpc', { vpcId: 'vpc-xxxxx' }),
+        // vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+        // securityGroups: [/* your security groups */],
+      },
+    );
 
     // Create HTTP API Gateway
     const httpApi = new apigatewayv2.HttpApi(this, 'HelloGoHttpApi', {
@@ -104,7 +116,10 @@ export class HelloGoStack extends cdk.Stack {
     });
 
     // Create Lambda integration
-    const integration = new HttpLambdaIntegration('LambdaIntegration', lambdaFunction);
+    const integration = new HttpLambdaIntegration(
+      'LambdaIntegration',
+      lambdaFunction,
+    );
 
     // Add proxy route (ANY /{proxy+})
     httpApi.addRoutes({
@@ -157,11 +172,10 @@ interface EcrImageDetails {
 
 // Add this function above the HelloGoStack class
 function parseEcrImageUri(ecrImageUri: string): EcrImageDetails {
-
   // Validate or provide default ECR image URI
   if (!ecrImageUri) {
     throw new Error(
-      'ECR image URI must be provided via context: -c ecr_image_uri=<uri> or in cdk.json'
+      'ECR image URI must be provided via context: -c ecr_image_uri=<uri> or in cdk.json',
     );
   }
 

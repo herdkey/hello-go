@@ -49,6 +49,7 @@ pnpx cdk deploy \
 ```
 
 **Context Parameters**:
+
 - `stage`: `test` (required)
 - `namespace`: Unique identifier (e.g., `pr-123`) for stack isolation
 - `pr`: Pull request number (optional, for tagging)
@@ -57,6 +58,7 @@ pnpx cdk deploy \
 - `ecr_image_uri`: Full ECR image URI with tag/digest
 
 **Tags Applied**:
+
 ```
 ephemeral=true
 svc=hello-go
@@ -69,6 +71,7 @@ expires_at=2025-10-10T00:00:00Z
 **Stack Name**: `HelloGo-pr-123`
 
 **Behavior**:
+
 - Resources use `RemovalPolicy.DESTROY` (auto-cleanup on stack deletion)
 - CloudWatch Logs: 7-day retention
 - One stack per namespace (reused across commits in same PR)
@@ -84,10 +87,12 @@ pnpx cdk deploy \
 ```
 
 **Context Parameters**:
+
 - `stage`: `play`, `stage`, or `prod`
 - `ecr_image_uri`: Full ECR image URI with tag/digest
 
 **Tags Applied**:
+
 ```
 svc=hello-go
 stage=prod
@@ -96,6 +101,7 @@ stage=prod
 **Stack Name**: `HelloGoStack`
 
 **Behavior**:
+
 - Resources use `RemovalPolicy.RETAIN` (persisted on stack deletion)
 - CloudWatch Logs: 30-day retention
 - Single stable stack per environment
@@ -167,7 +173,7 @@ Uncomment the following in `lib/hello-go-stack.ts`:
 
 ```typescript
 lambdaRole.addManagedPolicy(
-  iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess')
+  iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'),
 );
 ```
 
@@ -182,29 +188,33 @@ const lambdaFunction = new lambda.DockerImageFunction(this, 'HelloGoLambda', {
   // ... existing config
   vpc: ec2.Vpc.fromLookup(this, 'Vpc', { vpcId: 'vpc-xxxxx' }),
   vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-  securityGroups: [/* your security groups */],
+  securityGroups: [
+    /* your security groups */
+  ],
 });
 ```
 
 ## Configuration Defaults
 
-| Setting | Test (Ephemeral) | Live (Stable) |
-|---------|------------------|---------------|
-| Memory | 256 MB | 256 MB |
-| Timeout | 10s | 10s |
-| Log Retention | 7 days | 30 days |
-| Removal Policy | DESTROY | RETAIN |
-| Tags | `ephemeral=true`, `pr`, `sha`, `expires_at` | No ephemeral tags |
+| Setting        | Test (Ephemeral)                            | Live (Stable)     |
+| -------------- | ------------------------------------------- | ----------------- |
+| Memory         | 256 MB                                      | 256 MB            |
+| Timeout        | 10s                                         | 10s               |
+| Log Retention  | 7 days                                      | 30 days           |
+| Removal Policy | DESTROY                                     | RETAIN            |
+| Tags           | `ephemeral=true`, `pr`, `sha`, `expires_at` | No ephemeral tags |
 
 ## IAM Role
 
 The Lambda execution role includes:
+
 - **AWSLambdaBasicExecutionRole**: CloudWatch Logs write access
 - **Explicit separation**: No shared roles between functions
 
 ## CORS Configuration
 
 Permissive CORS by default:
+
 - **Origins**: `*`
 - **Methods**: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`
 - **Headers**: `*`

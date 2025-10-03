@@ -7,7 +7,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'cdk.out/', '**/*.d.ts', '**/*.config.*', '**/bin/**'],
+      exclude: [
+        'node_modules/',
+        'cdk.out/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/bin/**',
+      ],
     },
   },
 });

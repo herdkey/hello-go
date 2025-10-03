@@ -9,12 +9,15 @@
     "test": "vitest",
     "test:watch": "vitest watch",
     "test:coverage": "vitest --coverage",
+    "lint": "ESLINT_STRICT=true eslint . --fix --ext .ts,.js",
+    "format": "prettier --write .",
     "cdk": "cdk"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
     "@vitest/ui": "^3.2.4",
     "aws-cdk": "^2.1029.4",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
