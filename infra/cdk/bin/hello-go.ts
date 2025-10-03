@@ -36,6 +36,7 @@ if (isEphemeral) {
 }
 
 new HelloGoStack(app, stackName, {
+  baseName: 'hello-go',
   stage,
   namespace: isEphemeral ? namespace : undefined,
   isEphemeral,
