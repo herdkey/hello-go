@@ -32,6 +32,7 @@ jobs:
           - api
           - lambda
     with:
+      env-name: 'test'
       local-image-tag: 'hello-go-${{ matrix.component }}:latest'
       component: ${{ matrix.component }}
       build-cmd: './docker/${{ matrix.component }}/build.sh'

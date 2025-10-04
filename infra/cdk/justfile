@@ -1,0 +1,59 @@
+import '../../.justfiles/go/base.just'
+
+# Make local node binaries available like npm does
+export PATH := "node_modules/.bin:" + env_var("PATH")
+
+
+################################################################################
+#                                 CDK Bootstrap                                #
+################################################################################
+
+# Bootstrap CDK in AWS account
+[group('cdk')]
+bootstrap:
+    cdk bootstrap
+
+
+################################################################################
+#                                  Deployment                                  #
+################################################################################
+
+# Synthesize CloudFormation template
+[group('cdk')]
+synth image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "synth" "{{ image_tag }}"
+
+# Deploy ephemeral CDK stack to test environment
+[group('cdk')]
+deploy-test image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" --no-rollback
+
+# Rollback ephemeral test deployment
+[group('cdk')]
+rollback-test image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "rollback" "{{ image_tag }}"
+
+
+################################################################################
+#                              Quality & Testing                               #
+################################################################################
+
+# Compile typescript
+[group('build')]
+tsc:
+    tsc -p tsconfig.json
+
+# prettier
+[group('quality')]
+fmt:
+    prettier --write .
+
+# eslint
+[group('quality')]
+lint:
+    eslint . --fix
+
+# unit tests w/ vitest
+[group('test')]
+test:
+    vitest

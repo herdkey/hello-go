@@ -1,0 +1,28 @@
+{
+  "name": "hello-go-cdk",
+  "version": "1.0.0",
+  "description": "CDK infrastructure for hello-go Lambda",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/node": "^24.6.2",
+    "@vitest/ui": "^3.2.4",
+    "aws-cdk": "^2.1029.4",
+    "eslint": "^9.36.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.45.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.219.0",
+    "constructs": "^10.4.2"
+  },
+  "volta": {
+    "node": "22.20.0",
+    "pnpm": "10.18.0"
+  },
+  "packageManager": "pnpm@10.18.0"
+}
