@@ -4,40 +4,59 @@ import { HelloGoStack } from '../lib/hello-go-stack';
 
 const app = new cdk.App();
 
-// Read context values
-const stage = app.node.tryGetContext('stage') as string || "test";
-const namespace = app.node.tryGetContext('namespace') as string | undefined;
-const pr = app.node.tryGetContext('pr') as string | undefined;
-const sha = app.node.tryGetContext('sha') as string | undefined;
-const expiresAt = app.node.tryGetContext('expires_at') as string | undefined;
-const ecrImageUri = app.node.tryGetContext('ecr_image_uri') as string || "073835883885.dkr.ecr.us-west-2.amazonaws.com/test/hello-go/lambda:fcb8742";
+// Hardcoded infra constants
+const infraAccountId = '073835883885';
+const infraEcrRegion = 'us-west-2';
+const baseName = 'hello-go';
 
-// Determine if this is an ephemeral deployment (test env with namespace)
-const isEphemeral = stage === 'test' && !!namespace;
+// Read required context values
+const stage = app.node.tryGetContext('stage') as string || "test";
+const isEphemeral = app.node.tryGetContext('is_ephemeral') as boolean || false;
+const namespace = app.node.tryGetContext('namespace') as string | undefined;
+const commitHash = app.node.tryGetContext('commit_hash') as string | undefined;
+
+// Optional overrides
+const ecrImageTagOverride = app.node.tryGetContext('ecrImageTag') as string | undefined;
+const ecrRepoOverride = app.node.tryGetContext('ecrRepo') as string | undefined;
+
+// Validate required params
+if (!commitHash) {
+  throw new Error('commit_hash is required');
+}
+if (isEphemeral && !namespace) {
+  throw new Error('namespace is required when is_ephemeral is true');
+}
+
+// Calculate expires_at (30 days from now) for ephemeral deployments
+const expiresAt = isEphemeral
+  ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  : undefined;
+
+// Build ECR image URI
+const ecrImageTag = ecrImageTagOverride || (isEphemeral ? commitHash : 'latest');
+const ecrRepo = ecrRepoOverride || `${infraAccountId}.dkr.ecr.${infraEcrRegion}.amazonaws.com/${stage}/${baseName}/lambda`;
+const ecrImageUri = `${ecrRepo}:${ecrImageTag}`;
 
 // Build stack name
-let stackName = 'HelloGoStack';
-if (isEphemeral) {
-  stackName = `HelloGo-${namespace}`;
-}
+const stackName = isEphemeral ? `HelloGo-${namespace}` : 'HelloGo';
 
 // Build tags
 const tags: Record<string, string> = {
-  svc: 'hello-go',
+  svc: baseName,
   stage,
 };
 
 if (isEphemeral) {
   tags.ephemeral = 'true';
-  if (pr) tags.pr = String(pr);
-  if (sha) tags.sha = String(sha);
-  if (expiresAt) tags.expires_at = String(expiresAt);
+  tags.namespace = namespace;
+  tags.sha = commitHash;
+  tags.expires_at = String(expiresAt);
 }
 
 new HelloGoStack(app, stackName, {
-  baseName: 'hello-go',
+  baseName,
   stage,
-  namespace: isEphemeral ? namespace : undefined,
+  namespace,
   isEphemeral,
   ecrImageUri,
   tags,
