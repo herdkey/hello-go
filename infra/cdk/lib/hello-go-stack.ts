@@ -7,19 +7,26 @@ import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { Construct } from 'constructs';
 
+export interface EcrImageDetails {
+  repoName: string;
+  tag: string;
+  accountId: string;
+  region: string;
+}
+
 export interface HelloGoStackProps extends cdk.StackProps {
   baseName: string;
   stage: string;
   namespace?: string;
   isEphemeral: boolean;
-  ecrImageUri: string;
+  ecrImage: EcrImageDetails;
 }
 
 export class HelloGoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: HelloGoStackProps) {
     super(scope, id, props);
 
-    const { baseName, stage, namespace, isEphemeral, ecrImageUri } = props;
+    const { baseName, stage, namespace, isEphemeral, ecrImage } = props;
 
     // Determine removal policy and retention settings
     const removalPolicy = isEphemeral
@@ -60,16 +67,13 @@ export class HelloGoStack extends cdk.Stack {
     //   iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess')
     // );
 
-    // Then replace the existing parsing code with:
-    const { repoName, tag, accountId, region } = parseEcrImageUri(ecrImageUri);
-
     // Reference existing ECR repository
     const repository = ecr.Repository.fromRepositoryAttributes(
       this,
       'EcrRepository',
       {
-        repositoryName: repoName,
-        repositoryArn: `arn:aws:ecr:${region}:${accountId}:repository/${repoName}`,
+        repositoryName: ecrImage.repoName,
+        repositoryArn: `arn:aws:ecr:${ecrImage.region}:${ecrImage.accountId}:repository/${ecrImage.repoName}`,
       },
     );
 
@@ -80,7 +84,7 @@ export class HelloGoStack extends cdk.Stack {
       {
         functionName: lambdaName,
         code: lambda.DockerImageCode.fromEcr(repository, {
-          tagOrDigest: tag || 'latest',
+          tagOrDigest: ecrImage.tag,
         }),
         role: lambdaRole,
         memorySize: 256,
@@ -160,37 +164,4 @@ export class HelloGoStack extends cdk.Stack {
       exportName: `${lambdaBaseName}-role-arn`,
     });
   }
-}
-
-// First, add this interface above the HelloGoStack class
-interface EcrImageDetails {
-  repoName: string;
-  tag: string;
-  accountId: string;
-  region: string;
-}
-
-// Add this function above the HelloGoStack class
-function parseEcrImageUri(ecrImageUri: string): EcrImageDetails {
-  // Validate or provide default ECR image URI
-  if (!ecrImageUri) {
-    throw new Error(
-      'ECR image URI must be provided via context: -c ecr_image_uri=<uri> or in cdk.json',
-    );
-  }
-
-  // Format: {account}.dkr.ecr.{region}.amazonaws.com/{repo}:{tag}
-  const uriParts = ecrImageUri.split('/');
-  const repoAndTag = uriParts[uriParts.length - 1];
-  const [repoName, tag] = repoAndTag.split(':');
-  const registryParts = uriParts[0].split('.');
-  const accountId = registryParts[0];
-  const region = registryParts[3];
-
-  return {
-    repoName,
-    tag,
-    accountId,
-    region,
-  };
 }

@@ -123,7 +123,7 @@ describe('buildEcrImageUri', () => {
       stage: 'test',
       isEphemeral: false,
       commitHash: 'abc123',
-      ecrImageTagOverride: 'v1.2.3',
+      ecrImageTag: 'v1.2.3',
     };
 
     const result = buildEcrImageUri(context);

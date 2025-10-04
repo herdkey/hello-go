@@ -17,8 +17,20 @@ export interface AppContext {
   isEphemeral: boolean;
   namespace?: string;
   commitHash?: string;
-  ecrImageTagOverride?: string;
-  ecrRepoOverride?: string;
+  ecrImageTag?: string;
+  ecrRepoName?: string;
+  ecrAccountId?: string;
+  ecrRegion?: string;
+}
+
+/**
+ * ECR image details
+ */
+export interface EcrImageDetails {
+  repoName: string;
+  tag: string;
+  accountId: string;
+  region: string;
 }
 
 /**
@@ -29,7 +41,7 @@ export interface StackConfig {
   stage: string;
   namespace?: string;
   isEphemeral: boolean;
-  ecrImageUri: string;
+  ecrImage: EcrImageDetails;
   tags: Record<string, string>;
   env: {
     account: string | undefined;
@@ -48,10 +60,10 @@ export function readAppContext(app: cdk.App): AppContext {
     isEphemeral: (app.node.tryGetContext('is_ephemeral') as boolean) || false,
     namespace: app.node.tryGetContext('namespace') as string | undefined,
     commitHash: app.node.tryGetContext('commit_hash') as string | undefined,
-    ecrImageTagOverride: app.node.tryGetContext('ecrImageTag') as
-      | string
-      | undefined,
-    ecrRepoOverride: app.node.tryGetContext('ecrRepo') as string | undefined,
+    ecrImageTag: app.node.tryGetContext('ecrImageTag') as string | undefined,
+    ecrRepoName: app.node.tryGetContext('ecrRepoName') as string | undefined,
+    ecrAccountId: app.node.tryGetContext('ecrAccountId') as string | undefined,
+    ecrRegion: app.node.tryGetContext('ecrRegion') as string | undefined,
   };
 }
 
@@ -92,26 +104,27 @@ export function calculateExpiresAt(
 }
 
 /**
- * Builds the full ECR image URI for the Lambda function
- * @param context - Application context with image tag settings
+ * Builds ECR image details from context
+ * @param context - Application context with image settings
  * @param infraAccountId - AWS account ID for ECR registry
  * @param infraEcrRegion - AWS region for ECR registry
  * @param baseName - Base name for the service
- * @returns Full ECR image URI with tag
+ * @returns ECR image component details
  */
-export function buildEcrImageUri(
+export function buildEcrImageDetails(
   context: AppContext,
   infraAccountId: string = INFRA_ACCOUNT_ID,
   infraEcrRegion: string = INFRA_ECR_REGION,
   baseName: string = BASE_NAME,
-): string {
-  const ecrImageTag =
-    context.ecrImageTagOverride ||
-    (context.isEphemeral ? context.commitHash : 'latest');
-  const ecrRepo =
-    context.ecrRepoOverride ||
-    `${infraAccountId}.dkr.ecr.${infraEcrRegion}.amazonaws.com/${context.stage}/${baseName}/lambda`;
-  return `${ecrRepo}:${ecrImageTag}`;
+): EcrImageDetails {
+  return {
+    repoName: context.ecrRepoName || `${context.stage}/${baseName}/lambda`,
+    tag:
+      context.ecrImageTag ||
+      (context.isEphemeral ? context.commitHash : 'latest'),
+    accountId: context.ecrAccountId || infraAccountId,
+    region: context.ecrRegion || infraEcrRegion,
+  };
 }
 
 /**
@@ -167,7 +180,7 @@ export function buildStackConfig(
   baseName: string = BASE_NAME,
 ): StackConfig {
   const expiresAt = calculateExpiresAt(context.isEphemeral);
-  const ecrImageUri = buildEcrImageUri(context);
+  const ecrImage = buildEcrImageDetails(context);
   const tags = buildTags(context, baseName, expiresAt);
 
   return {
@@ -175,7 +188,7 @@ export function buildStackConfig(
     stage: context.stage,
     namespace: context.namespace,
     isEphemeral: context.isEphemeral,
-    ecrImageUri,
+    ecrImage,
     tags,
     env: {
       account: process.env.CDK_DEFAULT_ACCOUNT,
