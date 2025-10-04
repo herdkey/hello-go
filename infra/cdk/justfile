@@ -9,9 +9,6 @@ bootstrap:
 build:
     tsc -p tsconfig.json
 
-synth:
-    cdk synth
-
 deploy:
     cdk deploy
 
@@ -25,4 +22,10 @@ lint:
     pnpm run lint
 
 deploy-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "{{ image_tag }}"
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" --no-rollback
+
+rollback-test image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "rollback" "{{ image_tag }}"
+
+synth image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "synth" "{{ image_tag }}"

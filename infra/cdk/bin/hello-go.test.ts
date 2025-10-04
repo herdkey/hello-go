@@ -17,7 +17,7 @@ describe('validateContext', () => {
       commitHash: undefined,
     };
 
-    expect(() => validateContext(context)).toThrow('commit_hash is required');
+    expect(() => validateContext(context)).toThrow('commitHash is required');
   });
 
   it('throws error when isEphemeral is true but namespace is missing', () => {
@@ -29,7 +29,7 @@ describe('validateContext', () => {
     };
 
     expect(() => validateContext(context)).toThrow(
-      'namespace is required when is_ephemeral is true',
+      'namespace is required when isEphemeral is true',
     );
   });
 
@@ -89,7 +89,6 @@ describe('calculateExpiresAt', () => {
 describe('buildEcrImageDetails', () => {
   const defaultAccountId = '073835883885';
   const defaultRegion = 'us-west-2';
-  const baseName = 'hello-go';
 
   it('builds details with latest tag for non-ephemeral deployments', () => {
     const context: AppContext = {
