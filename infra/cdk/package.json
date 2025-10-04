@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "CDK infrastructure for hello-go Lambda",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",

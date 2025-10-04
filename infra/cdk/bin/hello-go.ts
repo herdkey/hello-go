@@ -84,13 +84,13 @@ export function validateContext(context: AppContext): void {
 /**
  * Calculates expiration date for ephemeral stacks
  * @param isEphemeral - Whether this is an ephemeral deployment
- * @param hoursFromNow - Number of hours until expiration (default: 1)
+ * @param daysFromNow - Number of days until expiration (default: 1)
  * @param now - Current date (defaults to now, injectable for testing)
  * @returns ISO date string (YYYY-MM-DD) if ephemeral, undefined otherwise
  */
 export function calculateExpiresAt(
   isEphemeral: boolean,
-  hoursFromNow: number = EPHEMERAL_HOURS,
+  daysFromNow: number = EPHEMERAL_HOURS,
   now: Date = new Date(),
 ): string | undefined {
   if (!isEphemeral) {
@@ -98,7 +98,7 @@ export function calculateExpiresAt(
   }
   const expirationDate = new Date(
     // calculate expiration time in milliseconds
-    now.getTime() + hoursFromNow * 60 * 60 * 1000,
+    now.getTime() + daysFromNow * 24 * 60 * 60 * 1000,
   );
   return expirationDate.toISOString().split('T')[0];
 }
@@ -121,7 +121,7 @@ export function buildEcrImageDetails(
     repoName: context.ecrRepoName || `${context.stage}/${baseName}/lambda`,
     tag:
       context.ecrImageTag ||
-      (context.isEphemeral ? context.commitHash : 'latest'),
+      (context.isEphemeral && context.commitHash) || "latest",
     accountId: context.ecrAccountId || infraAccountId,
     region: context.ecrRegion || infraEcrRegion,
   };

@@ -7,7 +7,7 @@ bootstrap:
     cdk bootstrap
 
 build:
-    tsc -p tsconfig.json5
+    tsc -p tsconfig.json
 
 synth:
     cdk synth
@@ -17,3 +17,9 @@ deploy:
 
 test:
     vitest
+
+format:
+    pnpm run format
+
+lint:
+    pnpm run lint

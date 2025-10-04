@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   validateContext,
   calculateExpiresAt,
-  buildEcrImageUri,
+  buildEcrImageDetails,
   buildStackName,
   buildTags,
   buildStackConfig,
@@ -86,25 +86,28 @@ describe('calculateExpiresAt', () => {
   });
 });
 
-describe('buildEcrImageUri', () => {
+describe('buildEcrImageDetails', () => {
   const defaultAccountId = '073835883885';
   const defaultRegion = 'us-west-2';
   const baseName = 'hello-go';
 
-  it('builds URI with latest tag for non-ephemeral deployments', () => {
+  it('builds details with latest tag for non-ephemeral deployments', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
       commitHash: 'abc123',
     };
 
-    const result = buildEcrImageUri(context);
-    expect(result).toBe(
-      `${defaultAccountId}.dkr.ecr.${defaultRegion}.amazonaws.com/prod/${baseName}/lambda:latest`,
-    );
+    const result = buildEcrImageDetails(context);
+    expect(result).toEqual({
+      repoName: 'prod/hello-go/lambda',
+      tag: 'latest',
+      accountId: defaultAccountId,
+      region: defaultRegion,
+    });
   });
 
-  it('builds URI with commit hash for ephemeral deployments', () => {
+  it('builds details with commit hash for ephemeral deployments', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
@@ -112,13 +115,16 @@ describe('buildEcrImageUri', () => {
       namespace: 'feature-branch',
     };
 
-    const result = buildEcrImageUri(context);
-    expect(result).toBe(
-      `${defaultAccountId}.dkr.ecr.${defaultRegion}.amazonaws.com/test/${baseName}/lambda:abc123`,
-    );
+    const result = buildEcrImageDetails(context);
+    expect(result).toEqual({
+      repoName: 'test/hello-go/lambda',
+      tag: 'abc123',
+      accountId: defaultAccountId,
+      region: defaultRegion,
+    });
   });
 
-  it('uses ecrImageTagOverride when provided', () => {
+  it('uses ecrImageTag when provided', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
@@ -126,24 +132,30 @@ describe('buildEcrImageUri', () => {
       ecrImageTag: 'v1.2.3',
     };
 
-    const result = buildEcrImageUri(context);
-    expect(result).toBe(
-      `${defaultAccountId}.dkr.ecr.${defaultRegion}.amazonaws.com/test/${baseName}/lambda:v1.2.3`,
-    );
+    const result = buildEcrImageDetails(context);
+    expect(result).toEqual({
+      repoName: 'test/hello-go/lambda',
+      tag: 'v1.2.3',
+      accountId: defaultAccountId,
+      region: defaultRegion,
+    });
   });
 
-  it('uses ecrRepoOverride when provided', () => {
+  it('uses ecrRepoName when provided', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
       commitHash: 'abc123',
-      ecrRepoOverride: '123456789.dkr.ecr.us-east-1.amazonaws.com/custom-repo',
+      ecrRepoName: 'custom-repo',
     };
 
-    const result = buildEcrImageUri(context);
-    expect(result).toBe(
-      '123456789.dkr.ecr.us-east-1.amazonaws.com/custom-repo:latest',
-    );
+    const result = buildEcrImageDetails(context);
+    expect(result).toEqual({
+      repoName: 'custom-repo',
+      tag: 'latest',
+      accountId: defaultAccountId,
+      region: defaultRegion,
+    });
   });
 
   it('uses custom account ID and region', () => {
@@ -153,10 +165,13 @@ describe('buildEcrImageUri', () => {
       commitHash: 'abc123',
     };
 
-    const result = buildEcrImageUri(context, '999999999', 'eu-west-1');
-    expect(result).toBe(
-      '999999999.dkr.ecr.eu-west-1.amazonaws.com/staging/hello-go/lambda:latest',
-    );
+    const result = buildEcrImageDetails(context, '999999999', 'eu-west-1');
+    expect(result).toEqual({
+      repoName: 'staging/hello-go/lambda',
+      tag: 'latest',
+      accountId: '999999999',
+      region: 'eu-west-1',
+    });
   });
 });
 
@@ -277,7 +292,7 @@ describe('buildStackConfig', () => {
     expect(result.stage).toBe('test');
     expect(result.namespace).toBe('feature-xyz');
     expect(result.isEphemeral).toBe(true);
-    expect(result.ecrImageUri).toContain('abc123');
+    expect(result.ecrImage.tag).toBe('abc123');
     expect(result.tags).toHaveProperty('ephemeral', 'true');
     expect(result.tags).toHaveProperty('namespace', 'feature-xyz');
     expect(result.tags).toHaveProperty('sha', 'abc123');
@@ -297,7 +312,7 @@ describe('buildStackConfig', () => {
     expect(result.stage).toBe('prod');
     expect(result.namespace).toBeUndefined();
     expect(result.isEphemeral).toBe(false);
-    expect(result.ecrImageUri).toContain('latest');
+    expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
       svc: 'hello-go',
       stage: 'prod',
