@@ -4,16 +4,6 @@
   "description": "CDK infrastructure for hello-go Lambda",
   "private": true,
   "type": "module",
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "vitest",
-    "test:watch": "vitest watch",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint . --fix",
-    "format": "prettier --write .",
-    "cdk": "cdk"
-  },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.6.2",
