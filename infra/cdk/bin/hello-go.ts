@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 import * as cdk from 'aws-cdk-lib';
 import { HelloGoStack } from '../lib/hello-go-stack';
 
@@ -8,6 +9,9 @@ const INFRA_ECR_REGION = 'us-west-2';
 const BASE_NAME = 'hello-go';
 const EPHEMERAL_HOURS = 1;
 
+/**
+ * Application context parsed from CDK context parameters
+ */
 export interface AppContext {
   stage: string;
   isEphemeral: boolean;
@@ -17,6 +21,9 @@ export interface AppContext {
   ecrRepoOverride?: string;
 }
 
+/**
+ * Configuration object for creating the CDK stack
+ */
 export interface StackConfig {
   baseName: string;
   stage: string;
@@ -30,6 +37,11 @@ export interface StackConfig {
   };
 }
 
+/**
+ * Reads and parses application context from CDK app
+ * @param app - The CDK app instance
+ * @returns Parsed application context with defaults
+ */
 export function readAppContext(app: cdk.App): AppContext {
   return {
     stage: (app.node.tryGetContext('stage') as string) || 'test',
@@ -43,6 +55,11 @@ export function readAppContext(app: cdk.App): AppContext {
   };
 }
 
+/**
+ * Validates required context parameters
+ * @param context - The application context to validate
+ * @throws Error if required parameters are missing
+ */
 export function validateContext(context: AppContext): void {
   if (!context.commitHash) {
     throw new Error('commit_hash is required');
@@ -52,6 +69,13 @@ export function validateContext(context: AppContext): void {
   }
 }
 
+/**
+ * Calculates expiration date for ephemeral stacks
+ * @param isEphemeral - Whether this is an ephemeral deployment
+ * @param hoursFromNow - Number of hours until expiration (default: 1)
+ * @param now - Current date (defaults to now, injectable for testing)
+ * @returns ISO date string (YYYY-MM-DD) if ephemeral, undefined otherwise
+ */
 export function calculateExpiresAt(
   isEphemeral: boolean,
   hoursFromNow: number = EPHEMERAL_HOURS,
@@ -67,6 +91,14 @@ export function calculateExpiresAt(
   return expirationDate.toISOString().split('T')[0];
 }
 
+/**
+ * Builds the full ECR image URI for the Lambda function
+ * @param context - Application context with image tag settings
+ * @param infraAccountId - AWS account ID for ECR registry
+ * @param infraEcrRegion - AWS region for ECR registry
+ * @param baseName - Base name for the service
+ * @returns Full ECR image URI with tag
+ */
 export function buildEcrImageUri(
   context: AppContext,
   infraAccountId: string = INFRA_ACCOUNT_ID,
@@ -82,6 +114,12 @@ export function buildEcrImageUri(
   return `${ecrRepo}:${ecrImageTag}`;
 }
 
+/**
+ * Builds the CloudFormation stack name
+ * @param isEphemeral - Whether this is an ephemeral deployment
+ * @param namespace - Namespace for ephemeral deployments
+ * @returns Stack name (includes namespace if ephemeral)
+ */
 export function buildStackName(
   isEphemeral: boolean,
   namespace?: string,
@@ -89,6 +127,13 @@ export function buildStackName(
   return isEphemeral ? `HelloGo-${namespace}` : 'HelloGo';
 }
 
+/**
+ * Builds resource tags for the stack
+ * @param context - Application context
+ * @param baseName - Base service name
+ * @param expiresAt - Expiration date for ephemeral stacks
+ * @returns Map of tag key-value pairs
+ */
 export function buildTags(
   context: AppContext,
   baseName: string = BASE_NAME,
@@ -111,6 +156,12 @@ export function buildTags(
   return tags;
 }
 
+/**
+ * Builds the complete stack configuration from context
+ * @param context - Application context
+ * @param baseName - Base service name
+ * @returns Complete stack configuration object
+ */
 export function buildStackConfig(
   context: AppContext,
   baseName: string = BASE_NAME,
@@ -133,6 +184,9 @@ export function buildStackConfig(
   };
 }
 
+/**
+ * Main entry point - creates and configures the CDK app
+ */
 export function main(): void {
   const app = new cdk.App();
   const context = readAppContext(app);
