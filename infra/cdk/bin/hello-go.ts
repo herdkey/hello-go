@@ -57,9 +57,9 @@ export interface StackConfig {
 export function readAppContext(app: cdk.App): AppContext {
   return {
     stage: (app.node.tryGetContext('stage') as string) || 'test',
-    isEphemeral: (app.node.tryGetContext('is_ephemeral') as boolean) || false,
+    isEphemeral: (app.node.tryGetContext('isEphemeral') as boolean) || false,
     namespace: app.node.tryGetContext('namespace') as string | undefined,
-    commitHash: app.node.tryGetContext('commit_hash') as string | undefined,
+    commitHash: app.node.tryGetContext('commitHash') as string | undefined,
     ecrImageTag: app.node.tryGetContext('ecrImageTag') as string | undefined,
     ecrRepoName: app.node.tryGetContext('ecrRepoName') as string | undefined,
     ecrAccountId: app.node.tryGetContext('ecrAccountId') as string | undefined,
@@ -74,10 +74,10 @@ export function readAppContext(app: cdk.App): AppContext {
  */
 export function validateContext(context: AppContext): void {
   if (!context.commitHash) {
-    throw new Error('commit_hash is required');
+    throw new Error('commitHash is required');
   }
   if (context.isEphemeral && !context.namespace) {
-    throw new Error('namespace is required when is_ephemeral is true');
+    throw new Error('namespace is required when isEphemeral is true');
   }
 }
 
@@ -211,6 +211,6 @@ export function main(): void {
 }
 
 // Only run main if this file is executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }

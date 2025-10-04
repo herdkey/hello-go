@@ -23,3 +23,6 @@ format:
 
 lint:
     pnpm run lint
+
+deploy-test image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "{{ image_tag }}"
