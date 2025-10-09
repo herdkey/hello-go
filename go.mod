@@ -1,4 +1,4 @@
-module github.com/herdkey/hello-go
+module github.com/savisec/hello-go
 
 go 1.25.1
 

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/herdkey/hello-go/internal/config"
-	"github.com/herdkey/hello-go/internal/httpserver"
-	"github.com/herdkey/hello-go/internal/logging"
-	"github.com/herdkey/hello-go/internal/router"
-	"github.com/herdkey/hello-go/internal/telemetry"
+	"github.com/savisec/hello-go/internal/config"
+	"github.com/savisec/hello-go/internal/httpserver"
+	"github.com/savisec/hello-go/internal/logging"
+	"github.com/savisec/hello-go/internal/router"
+	"github.com/savisec/hello-go/internal/telemetry"
 )
 
 // Application encompasses the server, telemetry, configuration, and logger.

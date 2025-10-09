@@ -12,10 +12,10 @@ import (
 	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/herdkey/hello-go/internal/config"
-	"github.com/herdkey/hello-go/internal/logging"
-	"github.com/herdkey/hello-go/internal/router"
-	"github.com/herdkey/hello-go/internal/telemetry"
+	"github.com/savisec/hello-go/internal/config"
+	"github.com/savisec/hello-go/internal/logging"
+	"github.com/savisec/hello-go/internal/router"
+	"github.com/savisec/hello-go/internal/telemetry"
 )
 
 var (

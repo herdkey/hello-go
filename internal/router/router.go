@@ -5,9 +5,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/herdkey/hello-go/internal/handlers"
-	"github.com/herdkey/hello-go/internal/httpserver"
-	"github.com/herdkey/hello-go/internal/services"
+	"github.com/savisec/hello-go/internal/handlers"
+	"github.com/savisec/hello-go/internal/httpserver"
+	"github.com/savisec/hello-go/internal/services"
 )
 
 // BuildRouter creates and configures the chi router with all routes
