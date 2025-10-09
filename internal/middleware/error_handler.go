@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/herdkey/hello-go/internal/api"
+	"github.com/savisec/hello-go/internal/api"
 )
 
 type ErrorHandler struct {

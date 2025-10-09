@@ -12,8 +12,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/herdkey/hello-go/internal/app"
-	"github.com/herdkey/hello-go/internal/config"
+	"github.com/savisec/hello-go/internal/app"
+	"github.com/savisec/hello-go/internal/config"
 )
 
 func main() {

@@ -48,7 +48,7 @@ Install the following packages with brew:
 
 ## Running
 
-Clone [just-common](https://github.com/herdkey/just-common) and set `JUST_COMMON_ROOT` to the root of that repo. From the root of this project (hello-go), run this: `"$JUST_COMMON_ROOT/link.py"`
+Clone [just-common](https://github.com/savisec/just-common) and set `JUST_COMMON_ROOT` to the root of that repo. From the root of this project (hello-go), run this: `"$JUST_COMMON_ROOT/link.py"`
 
 Run default task:
 ```shell

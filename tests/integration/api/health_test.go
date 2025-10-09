@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/herdkey/hello-go/internal/handlers"
-	"github.com/herdkey/hello-go/tests/integration/config"
+	"github.com/savisec/hello-go/internal/handlers"
+	"github.com/savisec/hello-go/tests/integration/config"
 )
 
 func TestHealthEndpoint(t *testing.T) {

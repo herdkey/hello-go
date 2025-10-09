@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/herdkey/hello-go/internal/config"
+	"github.com/savisec/hello-go/internal/config"
 )
 
 func Setup(cfg config.LoggingConfig) *slog.Logger {

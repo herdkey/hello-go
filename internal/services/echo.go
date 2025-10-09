@@ -3,7 +3,7 @@ package services
 import (
 	"log/slog"
 
-	"github.com/herdkey/hello-go/internal/api"
+	"github.com/savisec/hello-go/internal/api"
 )
 
 // EchoService provides echo functionality.

@@ -12,7 +12,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace/noop"
 
-	"github.com/herdkey/hello-go/internal/config"
+	"github.com/savisec/hello-go/internal/config"
 )
 
 type Provider struct {

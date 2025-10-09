@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/herdkey/hello-go/internal/api"
-	services "github.com/herdkey/hello-go/internal/services"
+	"github.com/savisec/hello-go/internal/api"
+	services "github.com/savisec/hello-go/internal/services"
 )
 
 func TestEchoService_Echo(t *testing.T) {

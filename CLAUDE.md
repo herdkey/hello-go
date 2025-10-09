@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a minimal Go project (`github.com/herdkey/hello-go`) using Go.
+This is a minimal Go project (`github.com/savisec/hello-go`) using Go.
 
 ## Ignore Files
 
