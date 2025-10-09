@@ -177,17 +177,17 @@ describe('buildEcrImageDetails', () => {
 describe('buildStackName', () => {
   it('returns base stack name for non-ephemeral deployments', () => {
     const result = buildStackName(false);
-    expect(result).toBe('HelloGo');
+    expect(result).toBe('hello-go');
   });
 
   it('returns namespaced stack name for ephemeral deployments', () => {
     const result = buildStackName(true, 'feature-xyz');
-    expect(result).toBe('HelloGo-feature-xyz');
+    expect(result).toBe('hello-go-feature-xyz');
   });
 
   it('includes namespace in ephemeral stack name', () => {
     const result = buildStackName(true, 'pr-123');
-    expect(result).toBe('HelloGo-pr-123');
+    expect(result).toBe('hello-go-pr-123');
   });
 });
 
