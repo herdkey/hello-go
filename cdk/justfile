@@ -1,4 +1,4 @@
-import '../../.justfiles/go/base.just'
+import '.justfiles/base.just'
 
 # Make local node binaries available like npm does
 export PATH := "node_modules/.bin:" + env_var("PATH")
@@ -32,20 +32,36 @@ destroy-test image_tag:
 #                              Quality & Testing                               #
 ################################################################################
 
-# Compile typescript
-[group('build')]
+# compile typescript
+[group('check')]
 tsc:
     tsc -p tsconfig.json
 
 # prettier
-[group('quality')]
-fmt:
-    prettier --write .
+[group('check')]
+_fmt *flags:
+    prettier {{flags}} .
+
+# prettier (dev)
+[group('check')]
+fmt: (_fmt "--write")
+
+# prettier (CI)
+[group('check')]
+fmt-check: (_fmt "--check")
 
 # eslint
-[group('quality')]
-lint:
-    eslint . --fix
+[group('check')]
+_lint *flags:
+    eslint {{flags}} .
+
+# eslint (dev)
+[group('check')]
+lint: (_lint "--fix")
+
+# eslint (CI)
+[group('check')]
+lint-check: _lint
 
 # unit tests w/ vitest
 [group('test')]

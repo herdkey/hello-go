@@ -42,3 +42,11 @@ jobs:
       contents: read
       # Required by the AWS OIDC provider
       id-token: write
+
+  # Test CDK infrastructure
+  cdk-test:
+    name: CDK Test
+    uses: ./.github/workflows/cdk.yml
+#    needs: docker-build-push
+    with:
+      working-directory: cdk

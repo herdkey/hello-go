@@ -1,0 +1,80 @@
+name: CDK Test
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        description: Node.js version to use (defaults to version from package.json volta config)
+        required: false
+        default: ''
+      working-directory:
+        type: string
+        description: Working directory containing the CDK project
+        required: false
+        default: '.'
+      just-common-ref:
+        type: string
+        description: The ref of just-common to use
+        required: false
+        default: v1
+
+jobs:
+  test:
+    name: CDK Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      # Extract Node version from package.json ("volta.node") and install it
+      - name: Read Node version (Volta)
+        id: node-version
+        run: |
+          v=$(jq -r '.volta.node // empty' package.json)
+          if [ -z "$v" ]; then
+            echo "No .volta.node in package.json"; exit 1
+          fi
+          echo "node-version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Enable Corepack (for pnpm)
+        run: |
+          corepack enable
+          pm=$(jq -r '.packageManager // empty' package.json)
+          if echo "$pm" | grep -q '^pnpm@'; then
+            corepack prepare "$pm" --activate
+          else
+            echo "No pnpm version specified in package.json"; exit 1
+          fi
+
+      - name: Install Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ steps.node-version.outputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+
+      - name: Setup Just
+        uses: savisec/github-actions/.github/actions/setup-just@v1
+        with:
+          just-common-ref: ${{ inputs.just-common-ref }}
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: just fmt-check
+
+      - name: Lint
+        run: just lint-check
+
+      - name: Run tests
+        run: just test
+
+      - name: Build
+        run: just tsc

@@ -121,7 +121,8 @@ export function buildEcrImageDetails(
     repoName: context.ecrRepoName || `${context.stage}/${baseName}/lambda`,
     tag:
       context.ecrImageTag ||
-      (context.isEphemeral && context.commitHash) || "latest",
+      (context.isEphemeral && context.commitHash) ||
+      'latest',
     accountId: context.ecrAccountId || infraAccountId,
     region: context.ecrRegion || infraEcrRegion,
   };

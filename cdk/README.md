@@ -197,7 +197,7 @@ const lambdaFunction = new lambda.DockerImageFunction(this, 'HelloGoLambda', {
 ## Configuration Defaults
 
 | Setting        | Test (Ephemeral)                            | Live (Stable)     |
-|----------------|---------------------------------------------|-------------------|
+| -------------- | ------------------------------------------- | ----------------- |
 | Memory         | 256 MB                                      | 256 MB            |
 | Timeout        | 10s                                         | 10s               |
 | Log Retention  | 7 days                                      | 30 days           |
