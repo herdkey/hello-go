@@ -1,0 +1,85 @@
+name: CDK Deploy
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        description: Node.js version to use (defaults to version from package.json volta config)
+        required: false
+        default: ''
+      working-directory:
+        type: string
+        description: Working directory containing the CDK project
+        required: false
+        default: 'cdk'
+      just-common-ref:
+        type: string
+        description: The ref of just-common to use
+        required: false
+        default: v1
+      image-tag:
+        type: string
+        description: The ECR image tag to deploy (e.g., short SHA or branch name)
+        required: true
+      aws-account-id:
+        type: string
+        description: AWS Account ID for the target environment
+        required: false
+        default: "024441264248"
+      aws-region:
+        type: string
+        description: AWS Region
+        required: false
+        default: us-west-2
+      env-name:
+        type: string
+        description: Environment name used for role naming (e.g., test, play, stage, prod)
+        required: false
+        default: test
+      cdk-qualifier:
+        type: string
+        description: |
+          CDK toolkit qualifier
+          (see https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping-customizing.html)
+        required: false
+        default: hnb659fds
+
+jobs:
+  deploy:
+    name: CDK Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required by the AWS OIDC provider
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          node-version: ${{ inputs.node-version }}
+
+      - name: Setup Just
+        uses: savisec/github-actions/.github/actions/setup-just@v1
+        with:
+          just-common-ref: ${{ inputs.just-common-ref }}
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: AWS Login
+        uses: savisec/github-actions/.github/actions/aws-login@v1
+        with:
+          aws-account-id: ${{ inputs.aws-account-id }}
+          aws-region: ${{ inputs.aws-region }}
+          env-name: ${{ inputs.env-name }}
+          debug-oidc: false
+
+      - name: Deploy CDK Stack
+        run: just deploy-test "${{ inputs.image-tag }}"

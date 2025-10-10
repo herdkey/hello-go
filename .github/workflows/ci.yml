@@ -24,7 +24,7 @@ jobs:
   # Build and push the Docker image
   docker-build-push:
     name: Docker Build & Push (${{ matrix.component }})
-    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1
+    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@SAV-45-cdk-workflow
     needs: build
     strategy:
       matrix:
@@ -45,8 +45,22 @@ jobs:
 
   # Test CDK infrastructure
   cdk-test:
-    name: CDK Test
-    uses: ./.github/workflows/cdk.yml
-#    needs: docker-build-push
+    name: CDK Build & Test
+    uses: ./.github/workflows/cdk-build.yml
     with:
       working-directory: cdk
+
+  # Deploy CDK infrastructure
+  cdk-deploy:
+    name: CDK Deploy
+    uses: ./.github/workflows/cdk-deploy.yml
+    needs: docker-build-push
+    with:
+      working-directory: cdk
+      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      env-name: test
+      aws-account-id: "024441264248"
+      aws-region: us-west-2
+    permissions:
+      contents: read
+      id-token: write
