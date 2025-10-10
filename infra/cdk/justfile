@@ -8,14 +8,6 @@ export PATH := "node_modules/.bin:" + env_var("PATH")
 #                                     CDK                                      #
 ################################################################################
 
-# Bootstrap CDK in AWS account
-[group('cdk')]
-bootstrap-test image_tag:
-    ACCOUNT_ID="024441264248" REGION="us-west-2"; \
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "bootstrap" "{{ image_tag }}" \
-        --cloudformation-execution-policies "arn:aws:iam::${ACCOUNT_ID}:policy/cfn-exec" \
-        "aws://${ACCOUNT_ID}/${REGION}"
-
 # Synthesize CloudFormation template
 [group('cdk')]
 synth image_tag:
