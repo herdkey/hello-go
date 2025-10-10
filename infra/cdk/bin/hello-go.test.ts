@@ -177,17 +177,17 @@ describe('buildEcrImageDetails', () => {
 describe('buildStackName', () => {
   it('returns base stack name for non-ephemeral deployments', () => {
     const result = buildStackName(false);
-    expect(result).toBe('HelloGo');
+    expect(result).toBe('hello-go');
   });
 
   it('returns namespaced stack name for ephemeral deployments', () => {
     const result = buildStackName(true, 'feature-xyz');
-    expect(result).toBe('HelloGo-feature-xyz');
+    expect(result).toBe('hello-go-feature-xyz');
   });
 
   it('includes namespace in ephemeral stack name', () => {
     const result = buildStackName(true, 'pr-123');
-    expect(result).toBe('HelloGo-pr-123');
+    expect(result).toBe('hello-go-pr-123');
   });
 });
 
@@ -203,8 +203,8 @@ describe('buildTags', () => {
 
     const result = buildTags(context);
     expect(result).toEqual({
-      svc: baseName,
-      stage: 'prod',
+      Repo: baseName,
+      Stage: 'prod',
     });
   });
 
@@ -218,12 +218,12 @@ describe('buildTags', () => {
 
     const result = buildTags(context, baseName, '2025-01-31');
     expect(result).toEqual({
-      svc: baseName,
-      stage: 'test',
-      ephemeral: 'true',
-      namespace: 'feature-branch',
-      sha: 'abc123',
-      expires_at: '2025-01-31',
+      Repo: baseName,
+      Stage: 'test',
+      Ephemeral: 'true',
+      Namespace: 'feature-branch',
+      SHA: 'abc123',
+      ExpiresAt: '2025-01-31',
     });
   });
 
@@ -237,8 +237,8 @@ describe('buildTags', () => {
 
     const result = buildTags(context);
     expect(result).toEqual({
-      svc: baseName,
-      stage: 'test',
+      Repo: baseName,
+      Stage: 'test',
     });
   });
 
@@ -252,8 +252,8 @@ describe('buildTags', () => {
 
     const result = buildTags(context);
     expect(result).toEqual({
-      svc: baseName,
-      stage: 'test',
+      Repo: baseName,
+      Stage: 'test',
     });
   });
 
@@ -267,11 +267,11 @@ describe('buildTags', () => {
 
     const result = buildTags(context, baseName, undefined);
     expect(result).toEqual({
-      svc: baseName,
-      stage: 'test',
-      ephemeral: 'true',
-      namespace: 'feature-branch',
-      sha: 'abc123',
+      Repo: baseName,
+      Stage: 'test',
+      Ephemeral: 'true',
+      Namespace: 'feature-branch',
+      SHA: 'abc123',
     });
   });
 });
@@ -292,10 +292,10 @@ describe('buildStackConfig', () => {
     expect(result.namespace).toBe('feature-xyz');
     expect(result.isEphemeral).toBe(true);
     expect(result.ecrImage.tag).toBe('abc123');
-    expect(result.tags).toHaveProperty('ephemeral', 'true');
-    expect(result.tags).toHaveProperty('namespace', 'feature-xyz');
-    expect(result.tags).toHaveProperty('sha', 'abc123');
-    expect(result.tags).toHaveProperty('expires_at');
+    expect(result.tags).toHaveProperty('Ephemeral', 'true');
+    expect(result.tags).toHaveProperty('Namespace', 'feature-xyz');
+    expect(result.tags).toHaveProperty('SHA', 'abc123');
+    expect(result.tags).toHaveProperty('ExpiresAt');
   });
 
   it('builds complete stack config for non-ephemeral deployment', () => {
@@ -313,8 +313,8 @@ describe('buildStackConfig', () => {
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
-      svc: 'hello-go',
-      stage: 'prod',
+      Repo: 'hello-go',
+      Stage: 'prod',
     });
   });
 

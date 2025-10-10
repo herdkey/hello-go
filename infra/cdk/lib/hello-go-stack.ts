@@ -84,10 +84,6 @@ export class HelloGoStack extends cdk.Stack {
       actions: ["ecr:DescribeRepositories"],
       resources: ["*"],
     }));
-    // lambdaRole.addToPolicy(new iam.PolicyStatement({
-    //   actions: ["*"],
-    //   resources: ["*"],
-    // }));
 
     // Create Lambda function from container image
     const lambdaFunction = new lambda.DockerImageFunction(

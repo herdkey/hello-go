@@ -68,7 +68,7 @@ sha=abc1234
 expires_at=2025-10-10T00:00:00Z
 ```
 
-**Stack Name**: `HelloGo-pr-123`
+**Stack Name**: `hello-go-pr-123`
 
 **Behavior**:
 
@@ -127,7 +127,7 @@ Or via AWS CLI:
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name HelloGo-pr-123 \
+  --stack-name hello-go-pr-123 \
   --query 'Stacks[0].Outputs'
 ```
 
@@ -136,7 +136,7 @@ aws cloudformation describe-stacks \
 ```bash
 # Get the API URL from outputs
 API_URL=$(aws cloudformation describe-stacks \
-  --stack-name HelloGo-pr-123 \
+  --stack-name hello-go-pr-123 \
   --query 'Stacks[0].Outputs[?OutputKey==`ApiBaseUrl`].OutputValue' \
   --output text)
 
@@ -197,7 +197,7 @@ const lambdaFunction = new lambda.DockerImageFunction(this, 'HelloGoLambda', {
 ## Configuration Defaults
 
 | Setting        | Test (Ephemeral)                            | Live (Stable)     |
-| -------------- | ------------------------------------------- | ----------------- |
+|----------------|---------------------------------------------|-------------------|
 | Memory         | 256 MB                                      | 256 MB            |
 | Timeout        | 10s                                         | 10s               |
 | Log Retention  | 7 days                                      | 30 days           |

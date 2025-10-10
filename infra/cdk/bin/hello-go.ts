@@ -137,7 +137,7 @@ export function buildStackName(
   isEphemeral: boolean,
   namespace?: string,
 ): string {
-  return isEphemeral ? `HelloGo-${namespace}` : 'HelloGo';
+  return isEphemeral ? `hello-go-${namespace}` : 'hello-go';
 }
 
 /**
@@ -153,16 +153,16 @@ export function buildTags(
   expiresAt?: string,
 ): Record<string, string> {
   const tags: Record<string, string> = {
-    svc: baseName,
-    stage: context.stage,
+    Stage: context.stage,
+    Repo: baseName,
   };
 
   if (context.isEphemeral && context.namespace && context.commitHash) {
-    tags.ephemeral = 'true';
-    tags.namespace = context.namespace;
-    tags.sha = context.commitHash;
+    tags.Ephemeral = 'true';
+    tags.Namespace = context.namespace;
+    tags.SHA = context.commitHash;
     if (expiresAt) {
-      tags.expires_at = expiresAt;
+      tags.ExpiresAt = expiresAt;
     }
   }
 

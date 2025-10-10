@@ -5,18 +5,16 @@ export PATH := "node_modules/.bin:" + env_var("PATH")
 
 
 ################################################################################
-#                                 CDK Bootstrap                                #
+#                                     CDK                                      #
 ################################################################################
 
 # Bootstrap CDK in AWS account
 [group('cdk')]
-bootstrap:
-    cdk bootstrap
-
-
-################################################################################
-#                                  Deployment                                  #
-################################################################################
+bootstrap-test image_tag:
+    ACCOUNT_ID="024441264248" REGION="us-west-2"; \
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "bootstrap" "{{ image_tag }}" \
+        --cloudformation-execution-policies "arn:aws:iam::${ACCOUNT_ID}:policy/cfn-exec" \
+        "aws://${ACCOUNT_ID}/${REGION}"
 
 # Synthesize CloudFormation template
 [group('cdk')]
@@ -26,13 +24,17 @@ synth image_tag:
 # Deploy ephemeral CDK stack to test environment
 [group('cdk')]
 deploy-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" --no-rollback
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" \
+    --no-rollback --require-approval never
 
 # Rollback ephemeral test deployment
 [group('cdk')]
 rollback-test image_tag:
     "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "rollback" "{{ image_tag }}"
 
+[group('cdk')]
+destroy-test image_tag:
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "destroy" "{{ image_tag }}"
 
 ################################################################################
 #                              Quality & Testing                               #
