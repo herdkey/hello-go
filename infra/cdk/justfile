@@ -24,7 +24,8 @@ synth image_tag:
 # Deploy ephemeral CDK stack to test environment
 [group('cdk')]
 deploy-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" --no-rollback
+    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" \
+    --no-rollback --require-approval never
 
 # Rollback ephemeral test deployment
 [group('cdk')]
