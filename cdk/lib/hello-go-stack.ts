@@ -26,7 +26,7 @@ export class HelloGoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: HelloGoStackProps) {
     super(scope, id, props);
 
-    const { baseName, stage, namespace, isEphemeral, ecrImage } = props;
+    const { baseName, namespace, isEphemeral, ecrImage } = props;
 
     // Determine removal policy and retention settings
     const removalPolicy = isEphemeral
@@ -39,7 +39,7 @@ export class HelloGoStack extends cdk.Stack {
 
     // Build resource name prefix
     const lambdaBaseName = `${baseName}-api`;
-    const lambdaName = `${lambdaBaseName}-${stage}${namespace ? `-${namespace}` : ''}`;
+    const lambdaName = `${lambdaBaseName}${namespace ? `-${namespace}` : ''}`;
 
     // Create CloudWatch Log Group for Lambda with explicit retention
     const lambdaLogGroup = new logs.LogGroup(this, 'LambdaLogGroup', {
@@ -99,7 +99,7 @@ export class HelloGoStack extends cdk.Stack {
         role: lambdaRole,
         memorySize: 256,
         timeout: cdk.Duration.seconds(10),
-        description: `hello-go API Lambda for ${stage}${namespace ? ` (${namespace})` : ''}`,
+        description: `hello-go API Lambda ${namespace ? ` (${namespace})` : ''}`,
         logGroup: lambdaLogGroup,
         // TODO: Optional VPC configuration
         // Uncomment and configure the following to wire Lambda into a VPC:
@@ -112,7 +112,7 @@ export class HelloGoStack extends cdk.Stack {
     // Create HTTP API Gateway
     const httpApi = new apigatewayv2.HttpApi(this, 'HelloGoHttpApi', {
       apiName: lambdaName,
-      description: `HTTP API for hello-go ${stage}${namespace ? ` (${namespace})` : ''}`,
+      description: `HTTP API for hello-go${namespace ? ` (${namespace})` : ''}`,
       corsPreflight: {
         allowOrigins: ['*'],
         allowMethods: [
@@ -153,25 +153,25 @@ export class HelloGoStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ApiBaseUrl', {
       value: httpApi.url || httpApi.apiEndpoint,
       description: 'Base URL of the HTTP API Gateway',
-      exportName: `${lambdaBaseName}-url`,
+      exportName: `${lambdaName}-url`,
     });
 
     new cdk.CfnOutput(this, 'LambdaArn', {
       value: lambdaFunction.functionArn,
       description: 'ARN of the Lambda function',
-      exportName: `${lambdaBaseName}-lambda-arn`,
+      exportName: `${lambdaName}-lambda-arn`,
     });
 
     new cdk.CfnOutput(this, 'LogGroupName', {
       value: lambdaFunction.logGroup.logGroupName,
       description: 'CloudWatch Log Group name',
-      exportName: `${lambdaBaseName}-log-group`,
+      exportName: `${lambdaName}-log-group`,
     });
 
     new cdk.CfnOutput(this, 'LambdaRoleArn', {
       value: lambdaRole.roleArn,
       description: 'ARN of the Lambda execution role',
-      exportName: `${lambdaBaseName}-role-arn`,
+      exportName: `${lambdaName}-role-arn`,
     });
   }
 }

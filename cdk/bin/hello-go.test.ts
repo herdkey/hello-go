@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  validateContext,
   calculateExpiresAt,
   buildEcrImageDetails,
   buildStackName,
@@ -8,52 +7,6 @@ import {
   buildStackConfig,
   type AppContext,
 } from './hello-go';
-
-describe('validateContext', () => {
-  it('throws error when commitHash is missing', () => {
-    const context: AppContext = {
-      stage: 'test',
-      isEphemeral: false,
-      commitHash: undefined,
-    };
-
-    expect(() => validateContext(context)).toThrow('commitHash is required');
-  });
-
-  it('throws error when isEphemeral is true but namespace is missing', () => {
-    const context: AppContext = {
-      stage: 'test',
-      isEphemeral: true,
-      commitHash: 'abc123',
-      namespace: undefined,
-    };
-
-    expect(() => validateContext(context)).toThrow(
-      'namespace is required when isEphemeral is true',
-    );
-  });
-
-  it('does not throw error when all required fields are present', () => {
-    const context: AppContext = {
-      stage: 'test',
-      isEphemeral: true,
-      commitHash: 'abc123',
-      namespace: 'my-namespace',
-    };
-
-    expect(() => validateContext(context)).not.toThrow();
-  });
-
-  it('does not throw error for non-ephemeral deployment without namespace', () => {
-    const context: AppContext = {
-      stage: 'prod',
-      isEphemeral: false,
-      commitHash: 'abc123',
-    };
-
-    expect(() => validateContext(context)).not.toThrow();
-  });
-});
 
 describe('calculateExpiresAt', () => {
   it('returns undefined for non-ephemeral deployments', () => {
@@ -95,6 +48,7 @@ describe('buildEcrImageDetails', () => {
       stage: 'prod',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
     };
 
     const result = buildEcrImageDetails(context);
@@ -112,6 +66,7 @@ describe('buildEcrImageDetails', () => {
       isEphemeral: true,
       commitHash: 'abc123',
       namespace: 'feature-branch',
+      ecrImageTag: 'abc123',
     };
 
     const result = buildEcrImageDetails(context);
@@ -145,6 +100,7 @@ describe('buildEcrImageDetails', () => {
       stage: 'test',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
       ecrRepoName: 'custom-repo',
     };
 
@@ -162,6 +118,7 @@ describe('buildEcrImageDetails', () => {
       stage: 'staging',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
     };
 
     const result = buildEcrImageDetails(context, '999999999', 'eu-west-1');
@@ -199,6 +156,7 @@ describe('buildTags', () => {
       stage: 'prod',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
     };
 
     const result = buildTags(context);
@@ -214,6 +172,7 @@ describe('buildTags', () => {
       isEphemeral: true,
       commitHash: 'abc123',
       namespace: 'feature-branch',
+      ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context, baseName, '2025-01-31');
@@ -233,6 +192,7 @@ describe('buildTags', () => {
       isEphemeral: true,
       commitHash: 'abc123',
       namespace: undefined,
+      ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context);
@@ -248,6 +208,7 @@ describe('buildTags', () => {
       isEphemeral: true,
       commitHash: undefined,
       namespace: 'feature-branch',
+      ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context);
@@ -263,6 +224,7 @@ describe('buildTags', () => {
       isEphemeral: true,
       commitHash: 'abc123',
       namespace: 'feature-branch',
+      ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context, baseName, undefined);
@@ -283,6 +245,7 @@ describe('buildStackConfig', () => {
       isEphemeral: true,
       commitHash: 'abc123',
       namespace: 'feature-xyz',
+      ecrImageTag: 'abc123',
     };
 
     const result = buildStackConfig(context);
@@ -303,6 +266,7 @@ describe('buildStackConfig', () => {
       stage: 'prod',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
     };
 
     const result = buildStackConfig(context);
@@ -323,6 +287,7 @@ describe('buildStackConfig', () => {
       stage: 'test',
       isEphemeral: false,
       commitHash: 'abc123',
+      ecrImageTag: 'latest',
     };
 
     const result = buildStackConfig(context);

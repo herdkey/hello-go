@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage function
+usage() {
+    cat <<EOF
+Usage: $0 <cdk-action> [options] [additional-cdk-args...]
+
+Required Arguments:
+    cdk-action              CDK command (deploy, synth, destroy, etc.)
+
+Required Options:
+    --image-tag <tag>       ECR image tag to deploy
+    --stage <stage>         Deployment stage (test, play, stage, or prod)
+
+Optional:
+    --namespace <name>      Namespace for ephemeral deployment (default: \${USER}-local for local, required for CI)
+    --commit-hash <hash>    Commit hash for tagging (default: auto-detect from git)
+    --aws-profile <profile> AWS profile to use (default: test-admin for local, none for CI)
+    --ci <enabled>          Running in CI mode (disables AWS_PROFILE, changes defaults)
+
+Examples:
+    # Local deployment
+    $0 deploy --image-tag my-tag
+
+    # CI deployment
+    $0 deploy --image-tag my-tag --ci true --namespace my-branch --commit-hash abc123
+
+    # Custom settings
+    $0 deploy --image-tag my-tag --namespace custom --stage prod
+EOF
+    exit 1
+}
+
+# Parse required arguments
+if [[ $# -lt 1 ]]; then
+    usage
+fi
+
+CDK_ACTION="${1}"
+shift 1
+
+# Default values
+CI_MODE=false
+AWS_PROFILE_NAME="test-admin"
+STAGE=""
+NAMESPACE=""
+COMMIT_HASH=""
+IMAGE_TAG=""
+
+# Parse optional arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --image-tag)
+            IMAGE_TAG="$2"
+            shift 2
+            ;;
+        --namespace)
+            NAMESPACE="$2"
+            shift 2
+            ;;
+        --commit-hash)
+            COMMIT_HASH="$2"
+            shift 2
+            ;;
+        --stage)
+            STAGE="$2"
+            shift 2
+            ;;
+        --aws-profile)
+            AWS_PROFILE_NAME="$2"
+            shift 2
+            ;;
+        --ci)
+            CI_MODE="$2"
+            shift 2
+            ;;
+        --help|-h)
+            usage
+            ;;
+        *)
+            # Remaining args are passed to CDK
+            break
+            ;;
+    esac
+done
+
+# Apply defaults for missing/empty values when running locally
+if [[ "$CI_MODE" == "false" ]]; then
+    # Auto-detect commit hash if not provided
+    if [[ -z "$COMMIT_HASH" ]]; then
+        COMMIT_HASH=$(git describe --tags --dirty --long --always)
+    fi
+
+    # Namespace by the username
+    if [[ -z "$NAMESPACE" ]]; then
+        # Local dev: default to ${USER}-local
+        NAMESPACE="${USER}-local"
+    fi
+
+    # Default stage to "test" if unset and not in CI mode
+    if [[ -z "$STAGE" ]]; then
+        STAGE="test"
+    fi
+
+    # Set AWS profile if not in CI mode
+    export AWS_PROFILE="$AWS_PROFILE_NAME"
+fi
+
+echo "=== CDK Deployment Configuration ==="
+echo "CDK Action:    $CDK_ACTION"
+echo "Image Tag:     $IMAGE_TAG"
+echo "Commit Hash:   $COMMIT_HASH"
+echo "Stage:         $STAGE"
+echo "Namespace:     $NAMESPACE"
+echo "CI Mode:       $CI_MODE"
+
+if [[ "$CI_MODE" == "false" ]]; then
+    echo "AWS Profile:   $AWS_PROFILE"
+fi
+echo "===================================="
+
+# Build CDK arguments array
+CDK_ARGS=(
+    "$CDK_ACTION"
+    -c "ecrImageTag=$IMAGE_TAG"
+    -c "commitHash=$COMMIT_HASH"
+    -c "stage=$STAGE"
+    -c "namespace=$NAMESPACE"
+)
+
+# Add deploy-specific flags
+if [[ "$CDK_ACTION" == "deploy" ]]; then
+    CDK_ARGS+=(--require-approval never)
+    # No-rollback for test stage deployments
+    if [[ "$STAGE" == "test" ]]; then
+        CDK_ARGS+=(--no-rollback)
+    fi
+fi
+
+# Pass through additional arguments
+CDK_ARGS+=("$@")
+
+pnpm cdk "${CDK_ARGS[@]}"

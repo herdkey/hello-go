@@ -82,4 +82,21 @@ jobs:
           debug-oidc: false
 
       - name: Deploy CDK Stack
-        run: just deploy-test "${{ inputs.image-tag }}"
+        run: |
+          # Determine namespace from ref (branch name or PR number)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            NAMESPACE="pr-${{ github.event.pull_request.number }}"
+          else
+            # Extract branch name from ref (refs/heads/branch-name -> branch-name)
+            NAMESPACE="${{ github.ref_name }}"
+            # Sanitize namespace: replace non-alphanumeric chars with hyphens, lowercase
+            NAMESPACE=$(echo "$NAMESPACE" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+          fi
+
+          # Deploy using just with variables
+          just \
+            image_tag="${{ inputs.image-tag }}" \
+            namespace="$NAMESPACE" \
+            commit_hash="${{ github.sha }}" \
+            stage="${{ inputs.env-name }}" \
+            deploy-ci

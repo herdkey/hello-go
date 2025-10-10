@@ -3,30 +3,41 @@ import '.justfiles/base.just'
 # Make local node binaries available like npm does
 export PATH := "node_modules/.bin:" + env_var("PATH")
 
-
 ################################################################################
-#                                     CDK                                      #
+#                                  CDK Tasks                                   #
 ################################################################################
 
-# Synthesize CloudFormation template
-[group('cdk')]
-synth image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "synth" "{{ image_tag }}"
+image_tag := ""
+namespace := ""
+commit_hash := ""
+stage := ""
 
-# Deploy ephemeral CDK stack to test environment
+# Private task to run CDK deployment script
 [group('cdk')]
-deploy-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "deploy" "{{ image_tag }}" \
-    --no-rollback --require-approval never
+_cdk command image_tag=image_tag namespace=namespace commit_hash=commit_hash stage=stage:
+    "{{ justfile_dir() }}/scripts/run_cdk.sh" "{{ command }}" \
+    --ci "{{ ci_mode }}" \
+    --image-tag "{{ image_tag }}" \
+    --namespace "{{ namespace }}" \
+    --commit-hash "{{ commit_hash }}" \
+    --stage "{{ stage }}"
+
+# Synthesize CloudFormation template (local)
+[group('cdk')]
+synth: (_cdk "synth")
+
+# Deploy ephemeral CDK stack to test environment (local)
+[group('cdk')]
+deploy: (_cdk "deploy")
 
 # Rollback ephemeral test deployment
 [group('cdk')]
-rollback-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "rollback" "{{ image_tag }}"
+rollback: (_cdk "rollback")
 
+# Destroy ephemeral stack (local)
 [group('cdk')]
-destroy-test image_tag:
-    "{{ justfile_dir() }}/scripts/deploy_test_from_local.sh" "destroy" "{{ image_tag }}"
+destroy: (_cdk "destroy")
+
 
 ################################################################################
 #                              Quality & Testing                               #
