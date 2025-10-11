@@ -2,12 +2,19 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { HelloGoStack } from '../lib/hello-go-stack';
+import { DefaultStackSynthesizer } from 'aws-cdk-lib';
 
-// Hardcoded infra constants
+// Constants
+const BASE_NAME = 'hello-go';
 const INFRA_ACCOUNT_ID = '073835883885';
 const INFRA_ECR_REGION = 'us-west-2';
-const BASE_NAME = 'hello-go';
 const EPHEMERAL_HOURS = 1;
+const ACCOUNT_ID = process.env.CDK_DEFAULT_ACCOUNT;
+// CDK (local) will assume this role to CRUD the CDK stack.
+const DEPLOYER_ROLE_ARN = `arn:aws:iam::${ACCOUNT_ID}:role/cdk-deploy-${BASE_NAME}`;
+// CDK passes this role to the CFN stack.
+// CFN will assume it to CRUD resources for the stack.
+const EXECUTION_ROLE_ARN = `arn:aws:iam::${ACCOUNT_ID}:role/cdk-exec-${BASE_NAME}`;
 
 /**
  * Application context parsed from CDK context parameters
@@ -15,7 +22,7 @@ const EPHEMERAL_HOURS = 1;
 export interface AppContext {
   stage: string;
   isEphemeral: boolean;
-  namespace?: string;
+  ephemeralNs?: string;
   commitHash: string;
   ecrImageTag: string;
   ecrRepoName?: string;
@@ -39,7 +46,7 @@ export interface EcrImageDetails {
 export interface StackConfig {
   baseName: string;
   stage: string;
-  namespace?: string;
+  ephemeralNs?: string;
   isEphemeral: boolean;
   ecrImage: EcrImageDetails;
   tags: Record<string, string>;
@@ -62,7 +69,7 @@ export function readAppContext(app: cdk.App): AppContext {
     | undefined;
   const stage = app.node.tryGetContext('stage') as string;
   const commitHash = app.node.tryGetContext('commitHash') as string | undefined;
-  const namespace = app.node.tryGetContext('namespace') as string | undefined;
+  const ephemeralNs = app.node.tryGetContext('ephemeralNs') as string | undefined;
   const isEphemeralRaw = app.node.tryGetContext('isEphemeral') as
     | string
     | boolean
@@ -91,14 +98,14 @@ export function readAppContext(app: cdk.App): AppContext {
   // Validate namespace logic
   if (!isEphemeral) {
     // Non-ephemeral: namespace must NOT be provided
-    if (namespace) {
+    if (ephemeralNs) {
       throw new Error(
         'namespace is only allowed for ephemeral (test stage) deployments',
       );
     }
   } else {
     // Ephemeral: namespace is required
-    if (!namespace) {
+    if (!ephemeralNs) {
       throw new Error(
         'namespace is required for ephemeral deployments (pass via -c namespace=<name>)',
       );
@@ -108,7 +115,7 @@ export function readAppContext(app: cdk.App): AppContext {
   return {
     stage,
     isEphemeral,
-    namespace,
+    ephemeralNs,
     commitHash,
     ecrImageTag,
     ecrRepoName: app.node.tryGetContext('ecrRepoName') as string | undefined,
@@ -164,14 +171,15 @@ export function buildEcrImageDetails(
 /**
  * Builds the CloudFormation stack name
  * @param isEphemeral - Whether this is an ephemeral deployment
- * @param namespace - Namespace for ephemeral deployments
- * @returns Stack name (includes namespace if ephemeral)
+ * @param ephemeralNs - Namespace for ephemeral deployments
+ * @returns Stack name (includes ephemeralNs if ephemeral)
  */
 export function buildStackName(
   isEphemeral: boolean,
-  namespace?: string,
+  ephemeralNs?: string,
 ): string {
-  return isEphemeral ? `hello-go-${namespace}` : 'hello-go';
+  const suffix = isEphemeral ? `-${ephemeralNs}` : '';
+  return `${BASE_NAME}${suffix}`;
 }
 
 /**
@@ -188,16 +196,20 @@ export function buildTags(
 ): Record<string, string> {
   const tags: Record<string, string> = {
     Stage: context.stage,
-    Repo: baseName,
+    Namespace: baseName,
   };
 
-  if (context.isEphemeral && context.namespace && context.commitHash) {
-    tags.Ephemeral = 'true';
-    tags.Namespace = context.namespace;
-    tags.SHA = context.commitHash;
-    if (expiresAt) {
-      tags.ExpiresAt = expiresAt;
+  if (context.isEphemeral) {
+    if (!context.ephemeralNs) {
+      throw new Error('ephemeralNs is required for ephemeral deployments');
     }
+    if (!expiresAt) {
+      throw new Error('expiresAt is required for ephemeral deployments');
+    }
+    tags.Ephemeral = 'true';
+    tags.EphemeralNS = context.ephemeralNs;
+    tags.SHA = context.commitHash;
+    tags.ExpiresAt = expiresAt;
   }
 
   return tags;
@@ -220,7 +232,7 @@ export function buildStackConfig(
   return {
     baseName,
     stage: context.stage,
-    namespace: context.namespace,
+    ephemeralNs: context.ephemeralNs,
     isEphemeral: context.isEphemeral,
     ecrImage,
     tags,
@@ -236,9 +248,15 @@ export function buildStackConfig(
  */
 export function main(): void {
   const app = new cdk.App();
-  const context = readAppContext(app); // Validation happens here now
-  const stackConfig = buildStackConfig(context, BASE_NAME);
-  const stackName = buildStackName(context.isEphemeral, context.namespace);
+  const context = readAppContext(app);
+  const stackName = buildStackName(context.isEphemeral, context.ephemeralNs);
+  const stackConfig = {
+    ...buildStackConfig(context, BASE_NAME),
+    synthesizer: new DefaultStackSynthesizer({
+      cloudFormationExecutionRole: EXECUTION_ROLE_ARN,
+      deployRoleArn: DEPLOYER_ROLE_ARN,
+    }),
+  };
 
   new HelloGoStack(app, stackName, stackConfig);
 }

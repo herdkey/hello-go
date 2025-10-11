@@ -65,7 +65,7 @@ describe('buildEcrImageDetails', () => {
       stage: 'test',
       isEphemeral: true,
       commitHash: 'abc123',
-      namespace: 'feature-branch',
+      ephemeralNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
@@ -161,7 +161,7 @@ describe('buildTags', () => {
 
     const result = buildTags(context);
     expect(result).toEqual({
-      Repo: baseName,
+      Namespace: baseName,
       Stage: 'prod',
     });
   });
@@ -171,13 +171,13 @@ describe('buildTags', () => {
       stage: 'test',
       isEphemeral: true,
       commitHash: 'abc123',
-      namespace: 'feature-branch',
+      ephemeralNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context, baseName, '2025-01-31');
     expect(result).toEqual({
-      Repo: baseName,
+      Namespace: baseName,
       Stage: 'test',
       Ephemeral: 'true',
       Namespace: 'feature-branch',
@@ -191,13 +191,13 @@ describe('buildTags', () => {
       stage: 'test',
       isEphemeral: true,
       commitHash: 'abc123',
-      namespace: undefined,
+      ephemeralNs: undefined,
       ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context);
     expect(result).toEqual({
-      Repo: baseName,
+      Namespace: baseName,
       Stage: 'test',
     });
   });
@@ -207,13 +207,13 @@ describe('buildTags', () => {
       stage: 'test',
       isEphemeral: true,
       commitHash: 'abc123',
-      namespace: 'feature-branch',
+      ephemeralNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
     const result = buildTags(context, baseName, undefined);
     expect(result).toEqual({
-      Repo: baseName,
+      Namespace: baseName,
       Stage: 'test',
       Ephemeral: 'true',
       Namespace: 'feature-branch',
@@ -228,7 +228,7 @@ describe('buildStackConfig', () => {
       stage: 'test',
       isEphemeral: true,
       commitHash: 'abc123',
-      namespace: 'feature-xyz',
+      ephemeralNs: 'feature-xyz',
       ecrImageTag: 'abc123',
     };
 
@@ -236,7 +236,7 @@ describe('buildStackConfig', () => {
 
     expect(result.baseName).toBe('hello-go');
     expect(result.stage).toBe('test');
-    expect(result.namespace).toBe('feature-xyz');
+    expect(result.ephemeralNs).toBe('feature-xyz');
     expect(result.isEphemeral).toBe(true);
     expect(result.ecrImage.tag).toBe('abc123');
     expect(result.tags).toHaveProperty('Ephemeral', 'true');
@@ -257,11 +257,11 @@ describe('buildStackConfig', () => {
 
     expect(result.baseName).toBe('hello-go');
     expect(result.stage).toBe('prod');
-    expect(result.namespace).toBeUndefined();
+    expect(result.ephemeralNs).toBeUndefined();
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
-      Repo: 'hello-go',
+      Namespace: 'hello-go',
       Stage: 'prod',
     });
   });
