@@ -99,4 +99,4 @@ jobs:
             namespace="$NAMESPACE" \
             commit_hash="${{ github.sha }}" \
             stage="${{ inputs.env-name }}" \
-            deploy-ci
+            deploy

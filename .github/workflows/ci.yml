@@ -24,7 +24,7 @@ jobs:
   # Build and push the Docker image
   docker-build-push:
     name: Docker Build & Push (${{ matrix.component }})
-    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@SAV-45-cdk-workflow
+    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1
     needs: build
     strategy:
       matrix:

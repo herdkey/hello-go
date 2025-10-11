@@ -57,11 +57,16 @@ export interface StackConfig {
  */
 export function readAppContext(app: cdk.App): AppContext {
   // Read raw values from context
-  const ecrImageTag = app.node.tryGetContext('ecrImageTag') as string | undefined;
+  const ecrImageTag = app.node.tryGetContext('ecrImageTag') as
+    | string
+    | undefined;
   const stage = app.node.tryGetContext('stage') as string;
   const commitHash = app.node.tryGetContext('commitHash') as string | undefined;
   const namespace = app.node.tryGetContext('namespace') as string | undefined;
-  const isEphemeralRaw = app.node.tryGetContext('isEphemeral') as string | boolean | undefined;
+  const isEphemeralRaw = app.node.tryGetContext('isEphemeral') as
+    | string
+    | boolean
+    | undefined;
 
   // Validate required parameter: ecrImageTag
   if (!ecrImageTag) {
@@ -87,12 +92,16 @@ export function readAppContext(app: cdk.App): AppContext {
   if (!isEphemeral) {
     // Non-ephemeral: namespace must NOT be provided
     if (namespace) {
-      throw new Error('namespace is only allowed for ephemeral (test stage) deployments');
+      throw new Error(
+        'namespace is only allowed for ephemeral (test stage) deployments',
+      );
     }
   } else {
     // Ephemeral: namespace is required
     if (!namespace) {
-      throw new Error('namespace is required for ephemeral deployments (pass via -c namespace=<name>)');
+      throw new Error(
+        'namespace is required for ephemeral deployments (pass via -c namespace=<name>)',
+      );
     }
   }
 
@@ -107,7 +116,6 @@ export function readAppContext(app: cdk.App): AppContext {
     ecrRegion: app.node.tryGetContext('ecrRegion') as string | undefined,
   };
 }
-
 
 /**
  * Calculates expiration date for ephemeral stacks

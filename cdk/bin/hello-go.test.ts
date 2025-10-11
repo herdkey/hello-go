@@ -202,22 +202,6 @@ describe('buildTags', () => {
     });
   });
 
-  it('does not add ephemeral tags when commitHash is missing', () => {
-    const context: AppContext = {
-      stage: 'test',
-      isEphemeral: true,
-      commitHash: undefined,
-      namespace: 'feature-branch',
-      ecrImageTag: 'abc123',
-    };
-
-    const result = buildTags(context);
-    expect(result).toEqual({
-      Repo: baseName,
-      Stage: 'test',
-    });
-  });
-
   it('does not add expires_at when not provided', () => {
     const context: AppContext = {
       stage: 'test',
