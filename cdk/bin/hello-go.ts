@@ -16,8 +16,8 @@ export interface AppContext {
   stage: string;
   isEphemeral: boolean;
   namespace?: string;
-  commitHash?: string;
-  ecrImageTag?: string;
+  commitHash: string;
+  ecrImageTag: string;
   ecrRepoName?: string;
   ecrAccountId?: string;
   ecrRegion?: string;
@@ -50,35 +50,71 @@ export interface StackConfig {
 }
 
 /**
- * Reads and parses application context from CDK app
+ * Reads and parses application context from CDK app with validation and defaults
  * @param app - The CDK app instance
- * @returns Parsed application context with defaults
+ * @returns Parsed application context with defaults applied
+ * @throws Error if required parameters are missing or invalid
  */
 export function readAppContext(app: cdk.App): AppContext {
+  // Read raw values from context
+  const ecrImageTag = app.node.tryGetContext('ecrImageTag') as
+    | string
+    | undefined;
+  const stage = app.node.tryGetContext('stage') as string;
+  const commitHash = app.node.tryGetContext('commitHash') as string | undefined;
+  const namespace = app.node.tryGetContext('namespace') as string | undefined;
+  const isEphemeralRaw = app.node.tryGetContext('isEphemeral') as
+    | string
+    | boolean
+    | undefined;
+
+  // Validate required parameter: ecrImageTag
+  if (!ecrImageTag) {
+    throw new Error('ecrImageTag is required (pass via -c ecrImageTag=<tag>)');
+  }
+
+  // Validate required parameter: stage
+  if (!stage) {
+    throw new Error('stage is required (pass via -c stage=<stage>)');
+  }
+
+  // Validate required parameter: commitHash
+  if (!commitHash) {
+    throw new Error('commitHash is required (pass via -c commitHash=<hash>)');
+  }
+
+  // Default: ephemeral if stage is "test", unless explicitly overridden
+  const isEphemeral =
+    isEphemeralRaw === 'true' ||
+    (isEphemeralRaw !== 'false' && stage === 'test');
+
+  // Validate namespace logic
+  if (!isEphemeral) {
+    // Non-ephemeral: namespace must NOT be provided
+    if (namespace) {
+      throw new Error(
+        'namespace is only allowed for ephemeral (test stage) deployments',
+      );
+    }
+  } else {
+    // Ephemeral: namespace is required
+    if (!namespace) {
+      throw new Error(
+        'namespace is required for ephemeral deployments (pass via -c namespace=<name>)',
+      );
+    }
+  }
+
   return {
-    stage: (app.node.tryGetContext('stage') as string) || 'test',
-    isEphemeral: (app.node.tryGetContext('isEphemeral') as boolean) || false,
-    namespace: app.node.tryGetContext('namespace') as string | undefined,
-    commitHash: app.node.tryGetContext('commitHash') as string | undefined,
-    ecrImageTag: app.node.tryGetContext('ecrImageTag') as string | undefined,
+    stage,
+    isEphemeral,
+    namespace,
+    commitHash,
+    ecrImageTag,
     ecrRepoName: app.node.tryGetContext('ecrRepoName') as string | undefined,
     ecrAccountId: app.node.tryGetContext('ecrAccountId') as string | undefined,
     ecrRegion: app.node.tryGetContext('ecrRegion') as string | undefined,
   };
-}
-
-/**
- * Validates required context parameters
- * @param context - The application context to validate
- * @throws Error if required parameters are missing
- */
-export function validateContext(context: AppContext): void {
-  if (!context.commitHash) {
-    throw new Error('commitHash is required');
-  }
-  if (context.isEphemeral && !context.namespace) {
-    throw new Error('namespace is required when isEphemeral is true');
-  }
 }
 
 /**
@@ -119,9 +155,7 @@ export function buildEcrImageDetails(
 ): EcrImageDetails {
   return {
     repoName: context.ecrRepoName || `${context.stage}/${baseName}/lambda`,
-    tag:
-      context.ecrImageTag ||
-      (context.isEphemeral && context.commitHash) || "latest",
+    tag: context.ecrImageTag,
     accountId: context.ecrAccountId || infraAccountId,
     region: context.ecrRegion || infraEcrRegion,
   };
@@ -202,8 +236,7 @@ export function buildStackConfig(
  */
 export function main(): void {
   const app = new cdk.App();
-  const context = readAppContext(app);
-  validateContext(context);
+  const context = readAppContext(app); // Validation happens here now
   const stackConfig = buildStackConfig(context, BASE_NAME);
   const stackName = buildStackName(context.isEphemeral, context.namespace);
 

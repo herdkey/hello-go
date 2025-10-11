@@ -1,0 +1,55 @@
+name: CDK Build & Test
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        description: Node.js version to use (defaults to version from package.json volta config)
+        required: false
+        default: ''
+      working-directory:
+        type: string
+        description: Working directory containing the CDK project
+        required: false
+        default: '.'
+      just-common-ref:
+        type: string
+        description: The ref of just-common to use
+        required: false
+        default: v1
+
+jobs:
+  test:
+    name: CDK Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Setup Just
+        uses: savisec/github-actions/.github/actions/setup-just@v1
+        with:
+          just-common-ref: ${{ inputs.just-common-ref }}
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Check formatting
+        run: just fmt-check
+
+      - name: Lint
+        run: just lint-check
+
+      - name: Run tests
+        run: just test
+
+      - name: Build
+        run: just tsc

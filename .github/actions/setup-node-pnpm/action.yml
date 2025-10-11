@@ -1,0 +1,63 @@
+name: Setup Node.js and pnpm
+author: savi
+description: |
+  Setup Node.js (from Volta config) and pnpm, then install dependencies
+
+inputs:
+  working-directory:
+    description: Working directory containing package.json
+    required: false
+    default: '.'
+  node-version:
+    description: Node.js version to use (if not specified, reads from package.json volta.node)
+    required: false
+    default: ''
+  install-dependencies:
+    description: Whether to install dependencies
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    # Extract Node version from package.json ("volta.node") if not provided
+    - name: Determine Node version
+      id: node-version
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if [ -n "${{ inputs.node-version }}" ]; then
+          v="${{ inputs.node-version }}"
+        else
+          v=$(jq -r '.volta.node // empty' package.json)
+          if [ -z "$v" ]; then
+            echo "No .volta.node in package.json and no node-version input provided"; exit 1
+          fi
+        fi
+        echo "node-version=$v" >> "$GITHUB_OUTPUT"
+
+    - name: Enable Corepack (for pnpm)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        corepack enable
+        pm=$(jq -r '.packageManager // empty' package.json)
+        if [ -n "$pm" ] && echo "$pm" | grep -q '^pnpm@'; then
+          corepack prepare "$pm" --activate
+        else
+          # If no pnpm version in package.json, just enable latest
+          echo "No pnpm version in package.json, using corepack default"
+        fi
+
+    - name: Install Node.js
+      uses: actions/setup-node@v5
+      with:
+        node-version: ${{ steps.node-version.outputs.node-version }}
+        cache: pnpm
+        cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+
+    - name: Install dependencies
+      if: ${{ inputs.install-dependencies == 'true' }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: pnpm install --frozen-lockfile

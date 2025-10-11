@@ -42,3 +42,25 @@ jobs:
       contents: read
       # Required by the AWS OIDC provider
       id-token: write
+
+  # Test CDK infrastructure
+  cdk-test:
+    name: CDK Build & Test
+    uses: ./.github/workflows/cdk-build.yml
+    with:
+      working-directory: cdk
+
+  # Deploy CDK infrastructure
+  cdk-deploy:
+    name: CDK Deploy
+    uses: ./.github/workflows/cdk-deploy.yml
+    needs: docker-build-push
+    with:
+      working-directory: cdk
+      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      env-name: test
+      aws-account-id: "024441264248"
+      aws-region: us-west-2
+    permissions:
+      contents: read
+      id-token: write
