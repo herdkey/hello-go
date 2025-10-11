@@ -3,7 +3,7 @@ module github.com/savisec/hello-go
 go 1.25.2
 
 require (
-	github.com/aws/aws-lambda-go v1.49.0
+	github.com/aws/aws-lambda-go v1.50.0
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/knadh/koanf/parsers/yaml v1.1.0
