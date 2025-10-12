@@ -8,7 +8,6 @@ import { DefaultStackSynthesizer } from 'aws-cdk-lib';
 const BASE_NAME = 'hello-go';
 const INFRA_ACCOUNT_ID = '073835883885';
 const INFRA_ECR_REGION = 'us-west-2';
-const EPHEMERAL_HOURS = 1;
 const ACCOUNT_ID = process.env.CDK_DEFAULT_ACCOUNT;
 // CDK (local) will assume this role to CRUD the CDK stack.
 const DEPLOYER_ROLE_ARN = `arn:aws:iam::${ACCOUNT_ID}:role/cdk-deploy-${BASE_NAME}`;

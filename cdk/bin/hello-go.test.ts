@@ -1,43 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  calculateExpiresAt,
   buildEcrImageDetails,
   buildStackName,
   buildTags,
   buildStackConfig,
   type AppContext,
 } from './hello-go';
-
-describe('calculateExpiresAt', () => {
-  it('returns undefined for non-ephemeral deployments', () => {
-    const result = calculateExpiresAt(false);
-    expect(result).toBeUndefined();
-  });
-
-  it('returns date 30 days from now for ephemeral deployments', () => {
-    const now = new Date('2025-01-01T00:00:00Z');
-    const result = calculateExpiresAt(true, 30, now);
-    expect(result).toBe('2025-01-31');
-  });
-
-  it('returns date with custom days from now', () => {
-    const now = new Date('2025-01-01T00:00:00Z');
-    const result = calculateExpiresAt(true, 7, now);
-    expect(result).toBe('2025-01-08');
-  });
-
-  it('handles month boundary correctly', () => {
-    const now = new Date('2025-01-25T00:00:00Z');
-    const result = calculateExpiresAt(true, 10, now);
-    expect(result).toBe('2025-02-04');
-  });
-
-  it('handles year boundary correctly', () => {
-    const now = new Date('2024-12-25T00:00:00Z');
-    const result = calculateExpiresAt(true, 10, now);
-    expect(result).toBe('2025-01-04');
-  });
-});
 
 describe('buildEcrImageDetails', () => {
   const defaultAccountId = '073835883885';
@@ -161,8 +129,8 @@ describe('buildTags', () => {
 
     const result = buildTags(context);
     expect(result).toEqual({
-      Namespace: baseName,
-      Stage: 'prod',
+      'savi:namespace': baseName,
+      'savi:stage': 'prod',
     });
   });
 
@@ -175,18 +143,18 @@ describe('buildTags', () => {
       ecrImageTag: 'abc123',
     };
 
-    const result = buildTags(context, baseName, '2025-01-31');
+    const now = 1735689600; // 2025-01-01T00:00:00Z
+    const result = buildTags(context, baseName, now);
     expect(result).toEqual({
-      Namespace: baseName,
-      Stage: 'test',
-      Ephemeral: 'true',
-      Namespace: 'feature-branch',
-      SHA: 'abc123',
-      ExpiresAt: '2025-01-31',
+      'savi:namespace': baseName,
+      'savi:stage': 'test',
+      'savi:instance-ns': 'feature-branch',
+      'savi:commit': 'abc123',
+      'savi:created-at': '1735689600',
     });
   });
 
-  it('does not add ephemeral tags when namespace is missing', () => {
+  it('throws error when namespace is missing for ephemeral', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
@@ -195,14 +163,12 @@ describe('buildTags', () => {
       ecrImageTag: 'abc123',
     };
 
-    const result = buildTags(context);
-    expect(result).toEqual({
-      Namespace: baseName,
-      Stage: 'test',
-    });
+    expect(() => buildTags(context)).toThrow(
+      'instanceNs is required for ephemeral deployments',
+    );
   });
 
-  it('does not add expires_at when not provided', () => {
+  it('uses current timestamp when not provided', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
@@ -211,14 +177,13 @@ describe('buildTags', () => {
       ecrImageTag: 'abc123',
     };
 
-    const result = buildTags(context, baseName, undefined);
-    expect(result).toEqual({
-      Namespace: baseName,
-      Stage: 'test',
-      Ephemeral: 'true',
-      Namespace: 'feature-branch',
-      SHA: 'abc123',
-    });
+    const result = buildTags(context, baseName);
+    expect(result).toHaveProperty('savi:namespace', baseName);
+    expect(result).toHaveProperty('savi:stage', 'test');
+    expect(result).toHaveProperty('savi:instance-ns', 'feature-branch');
+    expect(result).toHaveProperty('savi:commit', 'abc123');
+    expect(result).toHaveProperty('savi:created-at');
+    expect(parseInt(result['savi:created-at'])).toBeGreaterThan(0);
   });
 });
 
@@ -239,10 +204,11 @@ describe('buildStackConfig', () => {
     expect(result.instanceNs).toBe('feature-xyz');
     expect(result.isEphemeral).toBe(true);
     expect(result.ecrImage.tag).toBe('abc123');
-    expect(result.tags).toHaveProperty('Ephemeral', 'true');
-    expect(result.tags).toHaveProperty('Namespace', 'feature-xyz');
-    expect(result.tags).toHaveProperty('SHA', 'abc123');
-    expect(result.tags).toHaveProperty('ExpiresAt');
+    expect(result.tags).toHaveProperty('savi:namespace', 'hello-go');
+    expect(result.tags).toHaveProperty('savi:stage', 'test');
+    expect(result.tags).toHaveProperty('savi:instance-ns', 'feature-xyz');
+    expect(result.tags).toHaveProperty('savi:commit', 'abc123');
+    expect(result.tags).toHaveProperty('savi:created-at');
   });
 
   it('builds complete stack config for non-ephemeral deployment', () => {
@@ -261,8 +227,8 @@ describe('buildStackConfig', () => {
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
-      Namespace: 'hello-go',
-      Stage: 'prod',
+      'savi:namespace': 'hello-go',
+      'savi:stage': 'prod',
     });
   });
 
