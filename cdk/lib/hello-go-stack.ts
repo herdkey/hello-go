@@ -17,7 +17,7 @@ export interface EcrImageDetails {
 export interface HelloGoStackProps extends cdk.StackProps {
   baseName: string;
   stage: string;
-  namespace?: string;
+  instanceNs?: string;
   isEphemeral: boolean;
   ecrImage: EcrImageDetails;
 }
@@ -26,7 +26,7 @@ export class HelloGoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: HelloGoStackProps) {
     super(scope, id, props);
 
-    const { baseName, namespace, isEphemeral, ecrImage } = props;
+    const { baseName, instanceNs, isEphemeral, ecrImage } = props;
 
     // Determine removal policy and retention settings
     const removalPolicy = isEphemeral
@@ -39,7 +39,7 @@ export class HelloGoStack extends cdk.Stack {
 
     // Build resource name prefix
     const lambdaBaseName = `${baseName}-api`;
-    const lambdaName = `${lambdaBaseName}${namespace ? `-${namespace}` : ''}`;
+    const lambdaName = `${lambdaBaseName}${instanceNs ? `-${instanceNs}` : ''}`;
 
     // Create CloudWatch Log Group for Lambda with explicit retention
     const lambdaLogGroup = new logs.LogGroup(this, 'LambdaLogGroup', {
@@ -99,7 +99,7 @@ export class HelloGoStack extends cdk.Stack {
         role: lambdaRole,
         memorySize: 256,
         timeout: cdk.Duration.seconds(10),
-        description: `hello-go API Lambda ${namespace ? ` (${namespace})` : ''}`,
+        description: `hello-go API Lambda ${instanceNs ? ` (${instanceNs})` : ''}`,
         logGroup: lambdaLogGroup,
         // TODO: Optional VPC configuration
         // Uncomment and configure the following to wire Lambda into a VPC:
@@ -112,7 +112,7 @@ export class HelloGoStack extends cdk.Stack {
     // Create HTTP API Gateway
     const httpApi = new apigatewayv2.HttpApi(this, 'HelloGoHttpApi', {
       apiName: lambdaName,
-      description: `HTTP API for hello-go${namespace ? ` (${namespace})` : ''}`,
+      description: `HTTP API for hello-go${instanceNs ? ` (${instanceNs})` : ''}`,
       corsPreflight: {
         allowOrigins: ['*'],
         allowMethods: [

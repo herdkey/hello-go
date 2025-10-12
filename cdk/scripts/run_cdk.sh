@@ -14,7 +14,7 @@ Required Options:
     --stage <stage>         Deployment stage (test, play, stage, or prod)
 
 Optional:
-    --namespace <name>      Namespace for ephemeral deployment (default: \${USER}-local for local, required for CI)
+    --ephemeral-ns <name>   Namespace for ephemeral deployment (default: \${USER}-local for local, required for CI for ephemeral deployments)
     --commit-hash <hash>    Commit hash for tagging (default: auto-detect from git)
     --aws-profile <profile> AWS profile to use (default: test-admin for local, none for CI)
     --ci <enabled>          Running in CI mode (disables AWS_PROFILE, changes defaults)
@@ -24,10 +24,10 @@ Examples:
     $0 deploy --image-tag my-tag
 
     # CI deployment
-    $0 deploy --image-tag my-tag --ci true --namespace my-branch --commit-hash abc123
+    $0 deploy --image-tag my-tag --ci true --ephemeral-ns my-branch --commit-hash abc123
 
     # Custom settings
-    $0 deploy --image-tag my-tag --namespace custom --stage prod
+    $0 deploy --image-tag my-tag --ephemeral-ns custom --stage prod
 EOF
     exit 1
 }
@@ -44,7 +44,7 @@ shift 1
 CI_MODE=false
 AWS_PROFILE_NAME="test-admin"
 STAGE=""
-NAMESPACE=""
+INSTANCE_NS=""
 COMMIT_HASH=""
 IMAGE_TAG=""
 
@@ -55,8 +55,8 @@ while [[ $# -gt 0 ]]; do
             IMAGE_TAG="$2"
             shift 2
             ;;
-        --namespace)
-            NAMESPACE="$2"
+        --ephemeral-ns)
+            INSTANCE_NS="$2"
             shift 2
             ;;
         --commit-hash)
@@ -93,9 +93,9 @@ if [[ "$CI_MODE" == "false" ]]; then
     fi
 
     # Namespace by the username
-    if [[ -z "$NAMESPACE" ]]; then
+    if [[ -z "$INSTANCE_NS" ]]; then
         # Local dev: default to ${USER}-local
-        NAMESPACE="${USER}-local"
+        INSTANCE_NS="${USER}-local"
     fi
 
     # Default stage to "test" if unset and not in CI mode
@@ -112,7 +112,7 @@ echo "CDK Action:    $CDK_ACTION"
 echo "Image Tag:     $IMAGE_TAG"
 echo "Commit Hash:   $COMMIT_HASH"
 echo "Stage:         $STAGE"
-echo "Namespace:     $NAMESPACE"
+echo "Ephemeral NS:  $INSTANCE_NS"
 echo "CI Mode:       $CI_MODE"
 
 if [[ "$CI_MODE" == "false" ]]; then
@@ -124,9 +124,9 @@ echo "===================================="
 CDK_ARGS=(
     "$CDK_ACTION"
     -c "ecrImageTag=$IMAGE_TAG"
-    -c "commitHash=$COMMIT_HASH"
+    -c "commit=$COMMIT_HASH"
     -c "stage=$STAGE"
-    -c "namespace=$NAMESPACE"
+    -c "instanceNs=$INSTANCE_NS"
 )
 
 # Add deploy-specific flags
