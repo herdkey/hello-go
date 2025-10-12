@@ -8,17 +8,17 @@ export PATH := "node_modules/.bin:" + env_var("PATH")
 ################################################################################
 
 image_tag := ""
-ephemeral_ns := ""
+instance_ns := ""
 commit_hash := ""
 stage := ""
 
 # Private task to run CDK deployment script
 [group('cdk')]
-_cdk command image_tag=image_tag ephemeral_ns=ephemeral_ns commit_hash=commit_hash stage=stage:
+_cdk command image_tag=image_tag instance_ns=instance_ns commit_hash=commit_hash stage=stage:
     "{{ justfile_dir() }}/scripts/run_cdk.sh" "{{ command }}" \
     --ci "{{ ci_mode }}" \
     --image-tag "{{ image_tag }}" \
-    --ephemeral-ns "{{ ephemeral_ns }}" \
+    --ephemeral-ns "{{ instance_ns }}" \
     --commit-hash "{{ commit_hash }}" \
     --stage "{{ stage }}"
 

@@ -85,18 +85,18 @@ jobs:
         run: |
           # Determine namespace from ref (branch name or PR number)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            EPHEMERAL_NS="pr-${{ github.event.pull_request.number }}"
+            INSTANCE_NS="pr-${{ github.event.pull_request.number }}"
           else
             # Extract branch name from ref (refs/heads/branch-name -> branch-name)
-            EPHEMERAL_NS="${{ github.ref_name }}"
+            INSTANCE_NS="${{ github.ref_name }}"
             # Sanitize namespace: replace non-alphanumeric chars with hyphens, lowercase
-            EPHEMERAL_NS=$(echo "$EPHEMERAL_NS" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+            INSTANCE_NS=$(echo "$INSTANCE_NS" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
           fi
 
           # Deploy using just with variables
           just \
             image_tag="${{ inputs.image-tag }}" \
-            ephemeral_ns="$EPHEMERAL_NS" \
+            instance_ns="$INSTANCE_NS" \
             commit_hash="${{ github.sha }}" \
             stage="${{ inputs.env-name }}" \
             deploy

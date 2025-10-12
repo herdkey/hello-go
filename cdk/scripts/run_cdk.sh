@@ -44,7 +44,7 @@ shift 1
 CI_MODE=false
 AWS_PROFILE_NAME="test-admin"
 STAGE=""
-EPHEMERAL_NS=""
+INSTANCE_NS=""
 COMMIT_HASH=""
 IMAGE_TAG=""
 
@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --ephemeral-ns)
-            EPHEMERAL_NS="$2"
+            INSTANCE_NS="$2"
             shift 2
             ;;
         --commit-hash)
@@ -93,9 +93,9 @@ if [[ "$CI_MODE" == "false" ]]; then
     fi
 
     # Namespace by the username
-    if [[ -z "$EPHEMERAL_NS" ]]; then
+    if [[ -z "$INSTANCE_NS" ]]; then
         # Local dev: default to ${USER}-local
-        EPHEMERAL_NS="${USER}-local"
+        INSTANCE_NS="${USER}-local"
     fi
 
     # Default stage to "test" if unset and not in CI mode
@@ -112,7 +112,7 @@ echo "CDK Action:    $CDK_ACTION"
 echo "Image Tag:     $IMAGE_TAG"
 echo "Commit Hash:   $COMMIT_HASH"
 echo "Stage:         $STAGE"
-echo "Ephemeral NS:  $EPHEMERAL_NS"
+echo "Ephemeral NS:  $INSTANCE_NS"
 echo "CI Mode:       $CI_MODE"
 
 if [[ "$CI_MODE" == "false" ]]; then
@@ -124,9 +124,9 @@ echo "===================================="
 CDK_ARGS=(
     "$CDK_ACTION"
     -c "ecrImageTag=$IMAGE_TAG"
-    -c "commitHash=$COMMIT_HASH"
+    -c "commit=$COMMIT_HASH"
     -c "stage=$STAGE"
-    -c "ephemeralNs=$EPHEMERAL_NS"
+    -c "instanceNs=$INSTANCE_NS"
 )
 
 # Add deploy-specific flags

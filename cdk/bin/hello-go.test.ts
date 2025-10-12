@@ -47,7 +47,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
     };
 
@@ -64,8 +64,8 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
-      commitHash: 'abc123',
-      ephemeralNs: 'feature-branch',
+      commit: 'abc123',
+      instanceNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
@@ -82,7 +82,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'v1.2.3',
     };
 
@@ -99,7 +99,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
       ecrRepoName: 'custom-repo',
     };
@@ -117,7 +117,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'staging',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
     };
 
@@ -155,7 +155,7 @@ describe('buildTags', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
     };
 
@@ -170,8 +170,8 @@ describe('buildTags', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
-      commitHash: 'abc123',
-      ephemeralNs: 'feature-branch',
+      commit: 'abc123',
+      instanceNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
@@ -190,8 +190,8 @@ describe('buildTags', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
-      commitHash: 'abc123',
-      ephemeralNs: undefined,
+      commit: 'abc123',
+      instanceNs: undefined,
       ecrImageTag: 'abc123',
     };
 
@@ -206,8 +206,8 @@ describe('buildTags', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
-      commitHash: 'abc123',
-      ephemeralNs: 'feature-branch',
+      commit: 'abc123',
+      instanceNs: 'feature-branch',
       ecrImageTag: 'abc123',
     };
 
@@ -227,8 +227,8 @@ describe('buildStackConfig', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: true,
-      commitHash: 'abc123',
-      ephemeralNs: 'feature-xyz',
+      commit: 'abc123',
+      instanceNs: 'feature-xyz',
       ecrImageTag: 'abc123',
     };
 
@@ -236,7 +236,7 @@ describe('buildStackConfig', () => {
 
     expect(result.baseName).toBe('hello-go');
     expect(result.stage).toBe('test');
-    expect(result.ephemeralNs).toBe('feature-xyz');
+    expect(result.instanceNs).toBe('feature-xyz');
     expect(result.isEphemeral).toBe(true);
     expect(result.ecrImage.tag).toBe('abc123');
     expect(result.tags).toHaveProperty('Ephemeral', 'true');
@@ -249,7 +249,7 @@ describe('buildStackConfig', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
     };
 
@@ -257,7 +257,7 @@ describe('buildStackConfig', () => {
 
     expect(result.baseName).toBe('hello-go');
     expect(result.stage).toBe('prod');
-    expect(result.ephemeralNs).toBeUndefined();
+    expect(result.instanceNs).toBeUndefined();
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
@@ -270,7 +270,7 @@ describe('buildStackConfig', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
-      commitHash: 'abc123',
+      commit: 'abc123',
       ecrImageTag: 'latest',
     };
 

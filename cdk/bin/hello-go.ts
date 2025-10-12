@@ -24,8 +24,8 @@ const NOW = Math.floor(Date.now() / 1000);
 export interface AppContext {
   stage: string;
   isEphemeral: boolean;
-  ephemeralNs?: string;
-  commitHash: string;
+  instanceNs?: string;
+  commit: string;
   ecrImageTag: string;
   ecrRepoName?: string;
   ecrAccountId?: string;
@@ -48,7 +48,7 @@ export interface EcrImageDetails {
 export interface StackConfig {
   baseName: string;
   stage: string;
-  ephemeralNs?: string;
+  instanceNs?: string;
   isEphemeral: boolean;
   ecrImage: EcrImageDetails;
   tags: Record<string, string>;
@@ -70,8 +70,8 @@ export function readAppContext(app: cdk.App): AppContext {
     | string
     | undefined;
   const stage = app.node.tryGetContext('stage') as string;
-  const commitHash = app.node.tryGetContext('commitHash') as string | undefined;
-  const ephemeralNs = app.node.tryGetContext('ephemeralNs') as string | undefined;
+  const commit = app.node.tryGetContext('commit') as string | undefined;
+  const instanceNs = app.node.tryGetContext('instanceNs') as string | undefined;
   const isEphemeralRaw = app.node.tryGetContext('isEphemeral') as
     | string
     | boolean
@@ -87,9 +87,9 @@ export function readAppContext(app: cdk.App): AppContext {
     throw new Error('stage is required (pass via -c stage=<stage>)');
   }
 
-  // Validate required parameter: commitHash
-  if (!commitHash) {
-    throw new Error('commitHash is required (pass via -c commitHash=<hash>)');
+  // Validate required parameter: commit
+  if (!commit) {
+    throw new Error('commit is required (pass via -c commit=<hash>)');
   }
 
   // Default: ephemeral if stage is "test", unless explicitly overridden
@@ -99,17 +99,17 @@ export function readAppContext(app: cdk.App): AppContext {
 
   // Validate namespace logic
   if (!isEphemeral) {
-    // Non-ephemeral: namespace must NOT be provided
-    if (ephemeralNs) {
+    // Non-ephemeral: instanceNs must NOT be provided
+    if (instanceNs) {
       throw new Error(
-        'namespace is only allowed for ephemeral (test stage) deployments',
+        'instanceNs is only allowed for ephemeral (test stage) deployments',
       );
     }
   } else {
     // Ephemeral: namespace is required
-    if (!ephemeralNs) {
+    if (!instanceNs) {
       throw new Error(
-        'namespace is required for ephemeral deployments (pass via -c namespace=<name>)',
+        'instanceNs is required for ephemeral deployments (pass via -c instanceNs=<name>)',
       );
     }
   }
@@ -117,8 +117,8 @@ export function readAppContext(app: cdk.App): AppContext {
   return {
     stage,
     isEphemeral,
-    ephemeralNs,
-    commitHash,
+    instanceNs,
+    commit,
     ecrImageTag,
     ecrRepoName: app.node.tryGetContext('ecrRepoName') as string | undefined,
     ecrAccountId: app.node.tryGetContext('ecrAccountId') as string | undefined,
@@ -151,14 +151,14 @@ export function buildEcrImageDetails(
 /**
  * Builds the CloudFormation stack name
  * @param isEphemeral - Whether this is an ephemeral deployment
- * @param ephemeralNs - Namespace for ephemeral deployments
- * @returns Stack name (includes ephemeralNs if ephemeral)
+ * @param instanceNs - Namespace for ephemeral deployments
+ * @returns Stack name (includes instanceNs if ephemeral)
  */
 export function buildStackName(
   isEphemeral: boolean,
-  ephemeralNs?: string,
+  instanceNs?: string,
 ): string {
-  const suffix = isEphemeral ? `-${ephemeralNs}` : '';
+  const suffix = isEphemeral ? `-${instanceNs}` : '';
   return `${BASE_NAME}${suffix}`;
 }
 
@@ -175,17 +175,17 @@ export function buildTags(
   now: number = NOW,
 ): Record<string, string> {
   const tags: Record<string, string> = {
-    Stage: context.stage,
-    Namespace: baseName,
+    ['savi:stage']: context.stage,
+    ['savi:namespace']: baseName,
   };
 
   if (context.isEphemeral) {
-    if (!context.ephemeralNs) {
-      throw new Error('ephemeralNs is required for ephemeral deployments');
+    if (!context.instanceNs) {
+      throw new Error('instanceNs is required for ephemeral deployments');
     }
-    tags.EphemeralNs = context.ephemeralNs;
-    tags.SHA = context.commitHash;
-    tags.CreatedAt = `${now}`;
+    tags['savi:instance-ns'] = context.instanceNs;
+    tags['savi:commit'] = context.commit;
+    tags['savi:created-at'] = `${now}`;
   }
 
   return tags;
@@ -207,7 +207,7 @@ export function buildStackConfig(
   return {
     baseName,
     stage: context.stage,
-    ephemeralNs: context.ephemeralNs,
+    instanceNs: context.instanceNs,
     isEphemeral: context.isEphemeral,
     ecrImage,
     tags,
@@ -224,7 +224,7 @@ export function buildStackConfig(
 export function main(): void {
   const app = new cdk.App();
   const context = readAppContext(app);
-  const stackName = buildStackName(context.isEphemeral, context.ephemeralNs);
+  const stackName = buildStackName(context.isEphemeral, context.instanceNs);
   const stackConfig = {
     ...buildStackConfig(context, BASE_NAME),
     synthesizer: new DefaultStackSynthesizer({
