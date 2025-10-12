@@ -16,6 +16,8 @@ const DEPLOYER_ROLE_ARN = `arn:aws:iam::${ACCOUNT_ID}:role/cdk-deploy-${BASE_NAM
 // CFN will assume it to CRUD resources for the stack.
 const EXECUTION_ROLE_ARN = `arn:aws:iam::${ACCOUNT_ID}:role/cdk-exec-${BASE_NAME}`;
 
+const NOW = Math.floor(Date.now() / 1000);
+
 /**
  * Application context parsed from CDK context parameters
  */
@@ -125,28 +127,6 @@ export function readAppContext(app: cdk.App): AppContext {
 }
 
 /**
- * Calculates expiration date for ephemeral stacks
- * @param isEphemeral - Whether this is an ephemeral deployment
- * @param daysFromNow - Number of days until expiration (default: 1)
- * @param now - Current date (defaults to now, injectable for testing)
- * @returns ISO date string (YYYY-MM-DD) if ephemeral, undefined otherwise
- */
-export function calculateExpiresAt(
-  isEphemeral: boolean,
-  daysFromNow: number = EPHEMERAL_HOURS,
-  now: Date = new Date(),
-): string | undefined {
-  if (!isEphemeral) {
-    return undefined;
-  }
-  const expirationDate = new Date(
-    // calculate expiration time in milliseconds
-    now.getTime() + daysFromNow * 24 * 60 * 60 * 1000,
-  );
-  return expirationDate.toISOString().split('T')[0];
-}
-
-/**
  * Builds ECR image details from context
  * @param context - Application context with image settings
  * @param infraAccountId - AWS account ID for ECR registry
@@ -186,13 +166,13 @@ export function buildStackName(
  * Builds resource tags for the stack
  * @param context - Application context
  * @param baseName - Base service name
- * @param expiresAt - Expiration date for ephemeral stacks
+ * @param now - current timestamp
  * @returns Map of tag key-value pairs
  */
 export function buildTags(
   context: AppContext,
   baseName: string = BASE_NAME,
-  expiresAt?: string,
+  now: number = NOW,
 ): Record<string, string> {
   const tags: Record<string, string> = {
     Stage: context.stage,
@@ -203,13 +183,9 @@ export function buildTags(
     if (!context.ephemeralNs) {
       throw new Error('ephemeralNs is required for ephemeral deployments');
     }
-    if (!expiresAt) {
-      throw new Error('expiresAt is required for ephemeral deployments');
-    }
-    tags.Ephemeral = 'true';
-    tags.EphemeralNS = context.ephemeralNs;
+    tags.EphemeralNs = context.ephemeralNs;
     tags.SHA = context.commitHash;
-    tags.ExpiresAt = expiresAt;
+    tags.CreatedAt = `${now}`;
   }
 
   return tags;
@@ -225,9 +201,8 @@ export function buildStackConfig(
   context: AppContext,
   baseName: string = BASE_NAME,
 ): StackConfig {
-  const expiresAt = calculateExpiresAt(context.isEphemeral);
   const ecrImage = buildEcrImageDetails(context);
-  const tags = buildTags(context, baseName, expiresAt);
+  const tags = buildTags(context, baseName);
 
   return {
     baseName,
