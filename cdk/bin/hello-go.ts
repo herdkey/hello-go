@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import * as cdk from 'aws-cdk-lib';
-import { HelloGoStack } from '../lib/hello-go-stack';
 import { DefaultStackSynthesizer } from 'aws-cdk-lib';
+import { HelloGoStack } from '../lib/hello-go-stack';
 
 // Constants
 const BASE_NAME = 'hello-go';
@@ -149,21 +149,13 @@ export function buildTags(
   baseName: string = BASE_NAME,
   now: number = NOW,
 ): Record<string, string> {
-  const tags: Record<string, string> = {
+  return {
     ['savi:stage']: context.stage,
     ['savi:namespace']: baseName,
+    ['savi:instance-ns']: context.instanceNs,
+    ['savi:commit']: context.commit,
+    ['savi:created-at']: `${now}`,
   };
-
-  if (context.isEphemeral) {
-    if (!context.instanceNs) {
-      throw new Error('instanceNs is required for ephemeral deployments');
-    }
-    tags['savi:instance-ns'] = context.instanceNs;
-    tags['savi:commit'] = context.commit;
-    tags['savi:created-at'] = `${now}`;
-  }
-
-  return tags;
 }
 
 /**
