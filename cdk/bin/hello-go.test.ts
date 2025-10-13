@@ -114,10 +114,14 @@ describe('buildTags', () => {
       ecrImageTag: 'latest',
     };
 
-    const result = buildTags(context);
+    const now = 1735689600; // 2025-01-01T00:00:00Z
+    const result = buildTags(context, baseName, now);
     expect(result).toEqual({
       'savi:namespace': baseName,
       'savi:stage': 'prod',
+      'savi:instance-ns': 'main',
+      'savi:commit': 'abc123',
+      'savi:created-at': '1735689600',
     });
   });
 
@@ -200,10 +204,11 @@ describe('buildStackConfig', () => {
     expect(result.instanceNs).toBe('main');
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
-    expect(result.tags).toEqual({
-      'savi:namespace': 'hello-go',
-      'savi:stage': 'prod',
-    });
+    expect(result.tags).toHaveProperty('savi:namespace', 'hello-go');
+    expect(result.tags).toHaveProperty('savi:stage', 'prod');
+    expect(result.tags).toHaveProperty('savi:instance-ns', 'main');
+    expect(result.tags).toHaveProperty('savi:commit', 'abc123');
+    expect(result.tags).toHaveProperty('savi:created-at');
   });
 
   it('includes environment variables in config', () => {
