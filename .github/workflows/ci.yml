@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["main"]
 
+# Cancel in-progress runs for the same PR or branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   AWS_REGION: us-west-2
   INFRA_AWS_ACCOUNT_ID: "073835883885"
@@ -50,27 +55,30 @@ jobs:
     with:
       working-directory: cdk
 
-  # Deploy CDK infrastructure
-  cdk-deploy:
-    name: CDK Deploy
-    uses: ./.github/workflows/cdk-run.yml
-    needs: docker-build-push
+  # Deploy CDK infrastructure to test environment
+  cdk-deploy-test:
+    name: Test
+    uses: ./.github/workflows/cdk-deploy.yml
+    needs:
+      - cdk-test
+      - docker-build-push
     with:
       action: deploy
       working-directory: cdk
       image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
       env-name: test
-      aws-account-id: "024441264248"
       aws-region: us-west-2
     permissions:
       contents: read
       id-token: write
 
   # Teardown CDK infrastructure
-  cdk-destroy:
-    name: CDK Teardown
-    uses: ./.github/workflows/cdk-run.yml
-    needs: [docker-build-push, cdk-deploy]
+  cdk-destroy-test:
+    name: Test
+    uses: ./.github/workflows/cdk-deploy.yml
+    needs:
+      - docker-build-push
+      - cdk-deploy-test
     # Without always(), GitHub won't even evaluate this condition if any job in `needs:` failed.
     # `always()` forces the condition to run regardless of upstream failures, so we can still
     # decide based solely on docker-build-push's result.
@@ -80,7 +88,22 @@ jobs:
       working-directory: cdk
       image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
       env-name: test
-      aws-account-id: "024441264248"
+      aws-region: us-west-2
+    permissions:
+      contents: read
+      id-token: write
+
+  # Deploy CDK infrastructure to live environment (play/stage/prod)
+  cdk-deploy-live:
+    name: Play
+    uses: ./.github/workflows/cdk-deploy.yml
+    needs: docker-build-push
+    if: github.ref == 'refs/heads/main'
+    with:
+      action: deploy
+      working-directory: cdk
+      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      env-name: play
       aws-region: us-west-2
     permissions:
       contents: read

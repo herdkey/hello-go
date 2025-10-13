@@ -23,7 +23,7 @@ const NOW = Math.floor(Date.now() / 1000);
 export interface AppContext {
   stage: string;
   isEphemeral: boolean;
-  instanceNs?: string;
+  instanceNs: string;
   commit: string;
   ecrImageTag: string;
   ecrRepoName?: string;
@@ -91,27 +91,17 @@ export function readAppContext(app: cdk.App): AppContext {
     throw new Error('commit is required (pass via -c commit=<hash>)');
   }
 
+  // Validate required parameter: instanceNs
+  if (!instanceNs) {
+    throw new Error(
+      'instanceNs is required for all deployments (pass via -c instanceNs=<name>)',
+    );
+  }
+
   // Default: ephemeral if stage is "test", unless explicitly overridden
   const isEphemeral =
     isEphemeralRaw === 'true' ||
     (isEphemeralRaw !== 'false' && stage === 'test');
-
-  // Validate namespace logic
-  if (!isEphemeral) {
-    // Non-ephemeral: instanceNs must NOT be provided
-    if (instanceNs) {
-      throw new Error(
-        'instanceNs is only allowed for ephemeral (test stage) deployments',
-      );
-    }
-  } else {
-    // Ephemeral: namespace is required
-    if (!instanceNs) {
-      throw new Error(
-        'instanceNs is required for ephemeral deployments (pass via -c instanceNs=<name>)',
-      );
-    }
-  }
 
   return {
     stage,
@@ -145,20 +135,6 @@ export function buildEcrImageDetails(
     accountId: context.ecrAccountId || infraAccountId,
     region: context.ecrRegion || infraEcrRegion,
   };
-}
-
-/**
- * Builds the CloudFormation stack name
- * @param isEphemeral - Whether this is an ephemeral deployment
- * @param instanceNs - Namespace for ephemeral deployments
- * @returns Stack name (includes instanceNs if ephemeral)
- */
-export function buildStackName(
-  isEphemeral: boolean,
-  instanceNs?: string,
-): string {
-  const suffix = isEphemeral ? `-${instanceNs}` : '';
-  return `${BASE_NAME}${suffix}`;
 }
 
 /**
@@ -223,7 +199,7 @@ export function buildStackConfig(
 export function main(): void {
   const app = new cdk.App();
   const context = readAppContext(app);
-  const stackName = buildStackName(context.isEphemeral, context.instanceNs);
+  const stackName = `${BASE_NAME}-${context.instanceNs}`;
   const stackConfig = {
     ...buildStackConfig(context, BASE_NAME),
     synthesizer: new DefaultStackSynthesizer({
