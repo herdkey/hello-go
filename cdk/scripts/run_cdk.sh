@@ -129,6 +129,17 @@ CDK_ARGS=(
     -c "instanceNs=$INSTANCE_NS"
 )
 
+# The CDK CLI has some builtin behaviors for CI mode,
+# like sending logs to stdout instead of stderr.
+if [[ "$CI_MODE" == "true" ]]; then
+    CDK_ARGS+=(--ci)
+    # Without this, we will get this error in CI:
+    # "terminal (TTY) is not attached so we are unable to get a confirmation from the user"
+    if [[ "$CDK_ACTION" == "destroy" ]]; then
+        CDK_ARGS+=(--force)
+    fi
+fi
+
 # Add deploy-specific flags
 if [[ "$CDK_ACTION" == "deploy" ]]; then
     CDK_ARGS+=(--require-approval never)
