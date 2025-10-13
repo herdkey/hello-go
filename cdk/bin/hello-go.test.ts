@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildEcrImageDetails,
-  buildStackName,
   buildTags,
   buildStackConfig,
   type AppContext,
@@ -15,6 +14,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
     };
@@ -50,6 +50,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'v1.2.3',
     };
@@ -67,6 +68,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
       ecrRepoName: 'custom-repo',
@@ -85,6 +87,7 @@ describe('buildEcrImageDetails', () => {
     const context: AppContext = {
       stage: 'staging',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
     };
@@ -99,23 +102,6 @@ describe('buildEcrImageDetails', () => {
   });
 });
 
-describe('buildStackName', () => {
-  it('returns base stack name for non-ephemeral deployments', () => {
-    const result = buildStackName(false);
-    expect(result).toBe('hello-go');
-  });
-
-  it('returns namespaced stack name for ephemeral deployments', () => {
-    const result = buildStackName(true, 'feature-xyz');
-    expect(result).toBe('hello-go-feature-xyz');
-  });
-
-  it('includes namespace in ephemeral stack name', () => {
-    const result = buildStackName(true, 'pr-123');
-    expect(result).toBe('hello-go-pr-123');
-  });
-});
-
 describe('buildTags', () => {
   const baseName = 'hello-go';
 
@@ -123,6 +109,7 @@ describe('buildTags', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
     };
@@ -152,20 +139,6 @@ describe('buildTags', () => {
       'savi:commit': 'abc123',
       'savi:created-at': '1735689600',
     });
-  });
-
-  it('throws error when namespace is missing for ephemeral', () => {
-    const context: AppContext = {
-      stage: 'test',
-      isEphemeral: true,
-      commit: 'abc123',
-      instanceNs: undefined,
-      ecrImageTag: 'abc123',
-    };
-
-    expect(() => buildTags(context)).toThrow(
-      'instanceNs is required for ephemeral deployments',
-    );
   });
 
   it('uses current timestamp when not provided', () => {
@@ -215,6 +188,7 @@ describe('buildStackConfig', () => {
     const context: AppContext = {
       stage: 'prod',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
     };
@@ -223,7 +197,7 @@ describe('buildStackConfig', () => {
 
     expect(result.baseName).toBe('hello-go');
     expect(result.stage).toBe('prod');
-    expect(result.instanceNs).toBeUndefined();
+    expect(result.instanceNs).toBe('main');
     expect(result.isEphemeral).toBe(false);
     expect(result.ecrImage.tag).toBe('latest');
     expect(result.tags).toEqual({
@@ -236,6 +210,7 @@ describe('buildStackConfig', () => {
     const context: AppContext = {
       stage: 'test',
       isEphemeral: false,
+      instanceNs: 'main',
       commit: 'abc123',
       ecrImageTag: 'latest',
     };

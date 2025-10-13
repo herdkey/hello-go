@@ -1,4 +1,4 @@
-name: CDK Build & Test
+name: CDK Test
 
 on:
   workflow_call:
