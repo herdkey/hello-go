@@ -1,8 +1,12 @@
-name: CDK Deploy
+name: CDK Action
 
 on:
   workflow_call:
     inputs:
+      action:
+        type: string
+        description: CDK action to perform (deploy, destroy, synth, rollback)
+        required: true
       node-version:
         type: string
         description: Node.js version to use (defaults to version from package.json volta config)
@@ -46,8 +50,8 @@ on:
         default: hnb659fds
 
 jobs:
-  deploy:
-    name: CDK Deploy
+  cdk-action:
+    name: CDK ${{ inputs.action }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,7 +85,7 @@ jobs:
           env-name: ${{ inputs.env-name }}
           debug-oidc: false
 
-      - name: Deploy CDK Stack
+      - name: Run CDK ${{ inputs.action }}
         run: |
           # Determine namespace from ref (branch name or PR number)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -90,13 +94,20 @@ jobs:
             # Extract branch name from ref (refs/heads/branch-name -> branch-name)
             INSTANCE_NS="${{ github.ref_name }}"
             # Sanitize namespace: replace non-alphanumeric chars with hyphens, lowercase
-            INSTANCE_NS=$(echo "$INSTANCE_NS" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//')
+            INSTANCE_NS=$(
+              echo "$INSTANCE_NS" \
+              | tr '[:upper:]' '[:lower:]' \
+              | sed 's/[^a-z0-9-]/-/g' \
+              | sed 's/--*/-/g' \
+              | sed 's/^-//' \
+              | sed 's/-$//'
+            )
           fi
 
-          # Deploy using just with variables
+          # Run CDK action using just with variables
           just \
             image_tag="${{ inputs.image-tag }}" \
             instance_ns="$INSTANCE_NS" \
             commit_hash="${{ github.sha }}" \
             stage="${{ inputs.env-name }}" \
-            deploy
+            ${{ inputs.action }}

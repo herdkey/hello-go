@@ -53,9 +53,30 @@ jobs:
   # Deploy CDK infrastructure
   cdk-deploy:
     name: CDK Deploy
-    uses: ./.github/workflows/cdk-deploy.yml
+    uses: ./.github/workflows/cdk-run.yml
     needs: docker-build-push
     with:
+      action: deploy
+      working-directory: cdk
+      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      env-name: test
+      aws-account-id: "024441264248"
+      aws-region: us-west-2
+    permissions:
+      contents: read
+      id-token: write
+
+  # Teardown CDK infrastructure
+  cdk-destroy:
+    name: CDK Teardown
+    uses: ./.github/workflows/cdk-run.yml
+    needs: [docker-build-push, cdk-deploy]
+    # Without always(), GitHub won't even evaluate this condition if any job in `needs:` failed.
+    # `always()` forces the condition to run regardless of upstream failures, so we can still
+    # decide based solely on docker-build-push's result.
+    if: needs.docker-build-push.result == 'success' && always()
+    with:
+      action: destroy
       working-directory: cdk
       image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
       env-name: test
