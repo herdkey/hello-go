@@ -21,7 +21,7 @@ on:
 
 jobs:
   test:
-    name: CDK Build & Test
+    name: CDK Test
     runs-on: ubuntu-latest
     defaults:
       run:

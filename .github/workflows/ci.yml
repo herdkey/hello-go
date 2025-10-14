@@ -20,7 +20,7 @@ jobs:
   # Test and build the application
   # Upload the built binary as an artifact
   build:
-    name: Build & Test
+    name: Build
     uses: savisec/github-actions/.github/workflows/go-build.yml@v1.2
     with:
       build-artifact-name: &build_artifact_name binaries
@@ -28,7 +28,7 @@ jobs:
 
   # Build and push the Docker image
   docker-build-push:
-    name: Docker Build & Push (${{ matrix.component }})
+    name: Docker Build
     uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1.2
     needs: build
     with:
@@ -44,14 +44,14 @@ jobs:
 
   # Test CDK infrastructure
   cdk-test:
-    name: CDK Build & Test
-    uses: ./.github/workflows/cdk-build.yml
+    name: CDK Test
+    uses: ./.github/workflows/cdk-test.yml
     with:
       working-directory: cdk
 
   # Deploy CDK infrastructure to test environment
   cdk-deploy-test:
-    name: Test
+    name: Deploy Test
     uses: ./.github/workflows/cdk-deploy.yml
     needs:
       - cdk-test
@@ -68,7 +68,7 @@ jobs:
 
   # Teardown CDK infrastructure
   cdk-destroy-test:
-    name: Test
+    name: Destroy Test
     uses: ./.github/workflows/cdk-deploy.yml
     needs:
       - docker-build-push
@@ -104,7 +104,7 @@ jobs:
 
   # Deploy CDK infrastructure to live environment (play/stage/prod)
   cdk-deploy-live:
-    name: Play
+    name: Deploy Play
     uses: ./.github/workflows/cdk-deploy.yml
     needs:
       - docker-promote
