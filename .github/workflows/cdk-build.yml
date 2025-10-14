@@ -37,7 +37,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
 
       - name: Setup Just
-        uses: savisec/github-actions/.github/actions/setup-just@v1.1
+        uses: savisec/github-actions/.github/actions/setup-just@v1.2
         with:
           just-common-ref: ${{ inputs.just-common-ref }}
           working-directory: ${{ inputs.working-directory }}

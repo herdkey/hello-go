@@ -21,7 +21,7 @@ describe('buildEcrImageDetails', () => {
 
     const result = buildEcrImageDetails(context);
     expect(result).toEqual({
-      repoName: 'prod/hello-go/lambda',
+      repoName: 'release/hello-go/lambda',
       tag: 'latest',
       accountId: defaultAccountId,
       region: defaultRegion,
@@ -94,7 +94,7 @@ describe('buildEcrImageDetails', () => {
 
     const result = buildEcrImageDetails(context, '999999999', 'eu-west-1');
     expect(result).toEqual({
-      repoName: 'staging/hello-go/lambda',
+      repoName: 'release/hello-go/lambda',
       tag: 'latest',
       accountId: '999999999',
       region: 'eu-west-1',

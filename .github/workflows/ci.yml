@@ -13,7 +13,7 @@ concurrency:
 
 env:
   AWS_REGION: us-west-2
-  INFRA_AWS_ACCOUNT_ID: "073835883885"
+  INFRA_AWS_ACCOUNT_ID: "${{ vars.AWS_ACCOUNT_ID_INFRA }}"
 
 jobs:
 
@@ -21,28 +21,22 @@ jobs:
   # Upload the built binary as an artifact
   build:
     name: Build & Test
-    uses: savisec/github-actions/.github/workflows/go-build.yml@v1.1
+    uses: savisec/github-actions/.github/workflows/go-build.yml@v1.2
     with:
       build-artifact-name: &build_artifact_name binaries
-      build-output-file: ./bin
+      build-output-file: &build_artifact_path ./bin
 
   # Build and push the Docker image
   docker-build-push:
     name: Docker Build & Push (${{ matrix.component }})
-    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1.1
+    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1.2
     needs: build
-    strategy:
-      matrix:
-        component:
-          - api
-          - lambda
     with:
-      env-name: 'test'
-      local-image-tag: 'hello-go-${{ matrix.component }}:latest'
-      component: ${{ matrix.component }}
-      build-cmd: './docker/${{ matrix.component }}/build.sh'
+      local-image-tag: 'hello-go-lambda:latest'
+      component: lambda
+      build-cmd: './docker/lambda/build.sh'
       artifact-name: *build_artifact_name
-      artifact-path: ./bin
+      artifact-path: *build_artifact_path
     permissions:
       contents: read
       # Required by the AWS OIDC provider
@@ -65,7 +59,7 @@ jobs:
     with:
       action: deploy
       working-directory: cdk
-      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      image-tag: ${{ needs.docker-build-push.outputs.image-digest }}
       env-name: test
       aws-region: us-west-2
     permissions:
@@ -86,23 +80,39 @@ jobs:
     with:
       action: destroy
       working-directory: cdk
-      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      image-tag: ${{ needs.docker-build-push.outputs.image-digest }}
       env-name: test
       aws-region: us-west-2
     permissions:
       contents: read
       id-token: write
 
+  docker-promote:
+    name: Docker Promote
+    uses: savisec/github-actions/.github/workflows/docker-promote.yml@v1.2
+    needs:
+      - cdk-deploy-test
+      - docker-build-push
+    if: github.ref == 'refs/heads/main'
+    with:
+      component: lambda
+      image-digest: ${{ needs.docker-build-push.outputs.image-digest }}
+    permissions:
+      contents: read
+      # Required by the AWS OIDC provider
+      id-token: write
+
   # Deploy CDK infrastructure to live environment (play/stage/prod)
   cdk-deploy-live:
     name: Play
     uses: ./.github/workflows/cdk-deploy.yml
-    needs: docker-build-push
+    needs:
+      - docker-promote
     if: github.ref == 'refs/heads/main'
     with:
       action: deploy
       working-directory: cdk
-      image-tag: ${{ needs.docker-build-push.outputs.sha-version }}
+      image-tag: ${{ needs.docker-promote.outputs.image-digest }}
       env-name: play
       aws-region: us-west-2
     permissions:
