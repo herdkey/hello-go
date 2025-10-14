@@ -21,7 +21,7 @@ jobs:
   # Upload the built binary as an artifact
   build:
     name: Build & Test
-    uses: savisec/github-actions/.github/workflows/go-build.yml@v1
+    uses: savisec/github-actions/.github/workflows/go-build.yml@v1.1
     with:
       build-artifact-name: &build_artifact_name binaries
       build-output-file: ./bin
@@ -29,7 +29,7 @@ jobs:
   # Build and push the Docker image
   docker-build-push:
     name: Docker Build & Push (${{ matrix.component }})
-    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1
+    uses: savisec/github-actions/.github/workflows/docker-build-push.yml@v1.1
     needs: build
     strategy:
       matrix:
