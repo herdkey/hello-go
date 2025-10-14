@@ -69,17 +69,17 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - name: Setup Just
-        uses: savisec/github-actions/.github/actions/setup-just@v1.1
+        uses: savisec/github-actions/.github/actions/setup-just@v1.2
         with:
           just-common-ref: ${{ inputs.just-common-ref }}
           working-directory: ${{ inputs.working-directory }}
 
       - name: AWS Login
-        uses: savisec/github-actions/.github/actions/aws-login@v1.1
+        uses: savisec/github-actions/.github/actions/aws-login@v1.2
         with:
           aws-account-id: ${{ inputs.env-name == 'test' && vars.AWS_ACCOUNT_ID_TEST || vars.AWS_ACCOUNT_ID_LIVE }}
           aws-region: ${{ inputs.aws-region }}
-          env-name: ${{ inputs.env-name }}
+          role: ${{ inputs.env-name }}
           debug-oidc: false
 
       - name: Run CDK ${{ inputs.action }}

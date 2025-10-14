@@ -129,8 +129,9 @@ export function buildEcrImageDetails(
   infraEcrRegion: string = INFRA_ECR_REGION,
   baseName: string = BASE_NAME,
 ): EcrImageDetails {
+  const tier = context.stage == 'test' ? 'test' : 'release';
   return {
-    repoName: context.ecrRepoName || `${context.stage}/${baseName}/lambda`,
+    repoName: context.ecrRepoName || `${tier}/${baseName}/lambda`,
     tag: context.ecrImageTag,
     accountId: context.ecrAccountId || infraAccountId,
     region: context.ecrRegion || infraEcrRegion,
