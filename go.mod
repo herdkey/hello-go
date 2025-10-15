@@ -1,6 +1,6 @@
 module github.com/savisec/hello-go
 
-go 1.25.2
+go 1.25.3
 
 require (
 	github.com/aws/aws-lambda-go v1.50.0
