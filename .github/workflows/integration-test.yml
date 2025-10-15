@@ -3,9 +3,9 @@ name: Integration Test
 on:
   workflow_call:
     inputs:
-      api-url:
+      cdk-outputs-artifact:
         type: string
-        description: Base URL of the API to test against (e.g., https://abc123.execute-api.region.amazonaws.com/)
+        description: Name of the artifact containing cdk-outputs.json
         required: true
       go-version-file:
         type: string
@@ -42,12 +42,25 @@ jobs:
         with:
           just-common-ref: ${{ inputs.just-common-ref }}
 
-      - name: Parse API URL
+      - name: Download CDK outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.cdk-outputs-artifact }}
+
+      - name: Parse API URL from CDK outputs
         id: parse-url
         run: |
-          # Parse API URL to extract protocol, hostname, and port
-          # URL format: https://abc123.execute-api.region.amazonaws.com/
-          API_URL="${{ inputs.api-url }}"
+          # Read API URL from CDK outputs file
+          # File format: { "StackName": { "OutputKey": "value" } }
+          API_URL=$(jq -r '.[] | .ApiBaseUrl // empty' cdk-outputs.json)
+
+          if [[ -z "$API_URL" ]]; then
+            echo "Error: Could not find ApiBaseUrl in CDK outputs"
+            cat cdk-outputs.json
+            exit 1
+          fi
+
+          echo "Found API URL: $API_URL"
 
           # Extract protocol (http or https)
           if [[ "$API_URL" =~ ^https:// ]]; then

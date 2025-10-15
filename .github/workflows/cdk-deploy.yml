@@ -43,6 +43,13 @@ on:
           (see https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping-customizing.html)
         required: false
         default: hnb659fds
+    outputs:
+      instance-ns:
+        description: The calculated instance namespace (e.g., pr-123, main)
+        value: ${{ jobs.cdk-action.outputs.instance-ns }}
+      stack-name:
+        description: The CloudFormation stack name
+        value: ${{ jobs.cdk-action.outputs.stack-name }}
 
 jobs:
   cdk-action:
@@ -61,7 +68,6 @@ jobs:
     outputs:
       instance-ns: ${{ steps.calculate-namespace.outputs.instance_ns }}
       stack-name: ${{ steps.calculate-namespace.outputs.stack_name }}
-      api-url: ${{ steps.get-api-url.outputs.api_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -123,18 +129,11 @@ jobs:
             stage="${{ inputs.env-name }}" \
             ${{ inputs.action }}
 
-      - name: Get API URL from CloudFormation
-        id: get-api-url
+      - name: Upload CDK outputs
         if: inputs.action == 'deploy'
-        run: |
-          # Get API URL from CloudFormation outputs
-          API_URL=$(aws cloudformation describe-stacks \
-            --stack-name "${{ steps.calculate-namespace.outputs.stack_name }}" \
-            --region ${{ inputs.aws-region }} \
-            --query 'Stacks[0].Outputs[?OutputKey==`ApiBaseUrl`].OutputValue' \
-            --output text || echo "")
-
-          echo "api_url=$API_URL" >> $GITHUB_OUTPUT
-          if [[ -n "$API_URL" ]]; then
-            echo "Deployed API URL: $API_URL"
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdk-outputs-${{ steps.calculate-namespace.outputs.stack_name }}
+          path: ${{ inputs.working-directory }}/cdk-outputs.json
+          retention-days: 1
+          if-no-files-found: error
