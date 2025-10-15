@@ -11,43 +11,68 @@ import (
 	"github.com/savisec/hello-go/tests/integration/config"
 )
 
-type LambdaAPIGatewayRequest struct {
-	HTTPMethod     string            `json:"httpMethod"`
-	Path           string            `json:"path"`
-	Headers        map[string]string `json:"headers"`
-	RequestContext RequestContext    `json:"requestContext"`
-	Body           string            `json:"body"`
+// API Gateway V2 HTTP API request format
+type LambdaAPIGatewayV2Request struct {
+	Headers         map[string]string `json:"headers"`
+	Version         string            `json:"version"`
+	RouteKey        string            `json:"routeKey"`
+	RawPath         string            `json:"rawPath"`
+	RawQueryString  string            `json:"rawQueryString"`
+	Body            string            `json:"body"`
+	RequestContext  RequestContext    `json:"requestContext"`
+	IsBase64Encoded bool              `json:"isBase64Encoded"`
 }
 
 type RequestContext struct {
-	HTTPMethod string `json:"httpMethod"`
-	Path       string `json:"path"`
-	Stage      string `json:"stage"`
+	AccountID    string `json:"accountId"`
+	APIID        string `json:"apiId"`
+	DomainName   string `json:"domainName"`
+	DomainPrefix string `json:"domainPrefix"`
+	HTTP         HTTP   `json:"http"`
+	RequestID    string `json:"requestId"`
+	RouteKey     string `json:"routeKey"`
+	Stage        string `json:"stage"`
+	Time         string `json:"time"`
+	TimeEpoch    int64  `json:"timeEpoch"`
+}
+
+type HTTP struct {
+	Method    string `json:"method"`
+	Path      string `json:"path"`
+	Protocol  string `json:"protocol"`
+	SourceIP  string `json:"sourceIp"`
+	UserAgent string `json:"userAgent"`
 }
 
 type LambdaResponse struct {
 	Headers           map[string]string   `json:"headers"`
 	MultiValueHeaders map[string][]string `json:"multiValueHeaders"`
 	Body              string              `json:"body"`
+	Cookies           []string            `json:"cookies"`
 	StatusCode        int                 `json:"statusCode"`
 }
 
 func TestLambdaHealthEndpoint(t *testing.T) {
 	cfg := config.LoadConfig(t)
 
-	lambdaReq := LambdaAPIGatewayRequest{
-		HTTPMethod: "GET",
-		Path:       "/healthz",
+	lambdaReq := LambdaAPIGatewayV2Request{
+		Version:  "2.0",
+		RouteKey: "GET /healthz",
+		RawPath:  "/healthz",
 		Headers: map[string]string{
-			"Accept": "*/*",
-			"Host":   "localhost",
+			"accept": "*/*",
 		},
 		RequestContext: RequestContext{
-			HTTPMethod: "GET",
-			Path:       "/healthz",
-			Stage:      "prod",
+			HTTP: HTTP{
+				Method:   "GET",
+				Path:     "/healthz",
+				Protocol: "HTTP/1.1",
+				SourceIP: "127.0.0.1",
+			},
+			RouteKey: "GET /healthz",
+			Stage:    "$default",
 		},
-		Body: "",
+		IsBase64Encoded: false,
 	}
 
 	response := invokeLambda(t, cfg, lambdaReq)
@@ -76,20 +101,26 @@ func TestLambdaEchoEndpoint(t *testing.T) {
 	}
 	bodyJSON, _ := json.Marshal(echoBody)
 
-	lambdaReq := LambdaAPIGatewayRequest{
-		HTTPMethod: "POST",
-		Path:       "/v1/echo",
+	lambdaReq := LambdaAPIGatewayV2Request{
+		Version:  "2.0",
+		RouteKey: "POST /v1/echo",
+		RawPath:  "/v1/echo",
 		Headers: map[string]string{
-			"Accept":       "application/json",
-			"Content-Type": "application/json",
-			"Host":         "localhost",
+			"accept":       "application/json",
+			"content-type": "application/json",
 		},
 		RequestContext: RequestContext{
-			HTTPMethod: "POST",
-			Path:       "/v1/echo",
-			Stage:      "prod",
+			HTTP: HTTP{
+				Method:   "POST",
+				Path:     "/v1/echo",
+				Protocol: "HTTP/1.1",
+				SourceIP: "127.0.0.1",
+			},
+			RouteKey: "POST /v1/echo",
+			Stage:    "$default",
 		},
-		Body: string(bodyJSON),
+		Body:            string(bodyJSON),
+		IsBase64Encoded: false,
 	}
 
 	response := invokeLambda(t, cfg, lambdaReq)
@@ -121,20 +152,26 @@ func TestLambdaEchoEndpointValidation(t *testing.T) {
 	}
 	bodyJSON, _ := json.Marshal(incompleteBody)
 
-	lambdaReq := LambdaAPIGatewayRequest{
-		HTTPMethod: "POST",
-		Path:       "/v1/echo",
+	lambdaReq := LambdaAPIGatewayV2Request{
+		Version:  "2.0",
+		RouteKey: "POST /v1/echo",
+		RawPath:  "/v1/echo",
 		Headers: map[string]string{
-			"Accept":       "application/json",
-			"Content-Type": "application/json",
-			"Host":         "localhost",
+			"accept":       "application/json",
+			"content-type": "application/json",
 		},
 		RequestContext: RequestContext{
-			HTTPMethod: "POST",
-			Path:       "/v1/echo",
-			Stage:      "prod",
+			HTTP: HTTP{
+				Method:   "POST",
+				Path:     "/v1/echo",
+				Protocol: "HTTP/1.1",
+				SourceIP: "127.0.0.1",
+			},
+			RouteKey: "POST /v1/echo",
+			Stage:    "$default",
 		},
-		Body: string(bodyJSON),
+		Body:            string(bodyJSON),
+		IsBase64Encoded: false,
 	}
 
 	response := invokeLambda(t, cfg, lambdaReq)
@@ -153,7 +190,7 @@ func TestLambdaEchoEndpointValidation(t *testing.T) {
 	}
 }
 
-func invokeLambda(t *testing.T, cfg *config.Config, req LambdaAPIGatewayRequest) LambdaResponse {
+func invokeLambda(t *testing.T, cfg *config.Config, req LambdaAPIGatewayV2Request) LambdaResponse {
 	t.Helper()
 
 	reqJSON, err := json.Marshal(req)

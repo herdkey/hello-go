@@ -42,24 +42,33 @@ jobs:
         with:
           just-common-ref: ${{ inputs.just-common-ref }}
 
-      - name: Create integration test config
+      - name: Parse API URL
+        id: parse-url
         run: |
-          mkdir -p tests/integration/config
-
-          # Parse API URL to extract hostname
+          # Parse API URL to extract protocol, hostname, and port
           # URL format: https://abc123.execute-api.region.amazonaws.com/
           API_URL="${{ inputs.api-url }}"
-          # Remove protocol and trailing slash
+
+          # Extract protocol (http or https)
+          if [[ "$API_URL" =~ ^https:// ]]; then
+            PROTOCOL="https"
+            PORT="443"
+          else
+            PROTOCOL="http"
+            PORT="80"
+          fi
+
+          # Remove protocol and trailing slash to get hostname
           HOSTNAME=$(echo "$API_URL" | sed -e 's|^https\?://||' -e 's|/$||')
 
-          cat > tests/integration/config/local.yml << EOF
-          server:
-            protocol: https
-            host: ${HOSTNAME}
-            port: 443
-          EOF
-
-          echo "Created test config for: https://${HOSTNAME}"
+          echo "protocol=$PROTOCOL" >> $GITHUB_OUTPUT
+          echo "hostname=$HOSTNAME" >> $GITHUB_OUTPUT
+          echo "port=$PORT" >> $GITHUB_OUTPUT
+          echo "Testing against: ${PROTOCOL}://${HOSTNAME}:${PORT}"
 
       - name: Run integration tests
         run: just integration-test ${{ inputs.suite }}
+        env:
+          TEST_SERVER_PROTOCOL: ${{ steps.parse-url.outputs.protocol }}
+          TEST_SERVER_HOST: ${{ steps.parse-url.outputs.hostname }}
+          TEST_SERVER_PORT: ${{ steps.parse-url.outputs.port }}

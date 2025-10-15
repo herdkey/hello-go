@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 
 	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/env/v2"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
 )
@@ -52,13 +54,35 @@ func (l *LambdaConfig) InvocationURL() string {
 
 func loadConfig() (*Config, error) {
 	k := koanf.New(".")
+
+	// Layer 1: Load default config (lowest precedence)
 	if err := k.Load(file.Provider(filepath.Join(configDir(), "default.yml")), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error reading default config: %w", err)
 	}
-	// Attempt local merge
+
+	// Layer 2: Attempt local merge
 	_ = k.Load(file.Provider(filepath.Join(configDir(), "local.yml")), yaml.Parser())
-	// Attempt private merge
+
+	// Layer 3: Attempt private merge
 	_ = k.Load(file.Provider(filepath.Join(configDir(), "private.yml")), yaml.Parser())
+
+	// Layer 4: Environment variables (highest precedence)
+	// TEST_SERVER_HOST -> server.host
+	// TEST_SERVER_PORT -> server.port
+	// TEST_LAMBDA_HOST -> lambda.host
+	if err := k.Load(env.Provider(".", env.Opt{
+		Prefix: "TEST_",
+		TransformFunc: func(k, v string) (string, any) {
+			// Convert TEST_SERVER_HOST to server.host
+			// Remove prefix, convert to lowercase, replace _ with .
+			k = strings.TrimPrefix(k, "TEST_")
+			k = strings.ToLower(k)
+			k = strings.ReplaceAll(k, "_", ".")
+			return k, v
+		},
+	}), nil); err != nil {
+		return nil, fmt.Errorf("error loading environment variables: %w", err)
+	}
 
 	var cfg Config
 	if err := k.Unmarshal("", &cfg); err != nil {
