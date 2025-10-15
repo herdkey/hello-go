@@ -73,7 +73,7 @@ jobs:
     needs:
       - cdk-deploy-test
     with:
-      cdk-outputs-artifact: cdk-outputs-${{ needs.cdk-deploy-test.outputs.stack-name }}
+      cdk-outputs-artifact: ${{ needs.cdk-deploy-test.outputs.cdk-outputs-artifact-name }}
       suite: api
 
   # Teardown CDK infrastructure
