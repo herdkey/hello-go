@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	chiLambda         *chiadapter.ChiLambda
+	chiLambda         *chiadapter.ChiLambdaV2
 	telemetryProvider *telemetry.Provider
 	logger            *slog.Logger
 )
@@ -42,7 +42,7 @@ func init() {
 	}
 
 	r := router.BuildRouter(logger)
-	chiLambda = chiadapter.New(r.(*chi.Mux))
+	chiLambda = chiadapter.NewV2(r.(*chi.Mux))
 
 	// Set up signal handler for graceful shutdown
 	go shutdownHook()
@@ -59,8 +59,8 @@ func shutdownHook() {
 	os.Exit(0)
 }
 
-func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return chiLambda.ProxyWithContext(ctx, req)
+func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	return chiLambda.ProxyWithContextV2(ctx, req)
 }
 
 func main() {

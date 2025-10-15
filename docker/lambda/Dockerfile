@@ -25,4 +25,4 @@ RUN chmod 755 /var/task/main
 COPY configs/default.yml configs/default.yml
 
 # Set the ENTRYPOINT to the handler
-ENTRYPOINT ["/var/task/main"]
+ENTRYPOINT ["./main"]
