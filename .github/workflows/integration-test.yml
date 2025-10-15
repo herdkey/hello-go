@@ -1,0 +1,65 @@
+name: Integration Test
+
+on:
+  workflow_call:
+    inputs:
+      api-url:
+        type: string
+        description: Base URL of the API to test against (e.g., https://abc123.execute-api.region.amazonaws.com/)
+        required: true
+      go-version-file:
+        type: string
+        description: Path to go.mod file for Go version
+        required: false
+        default: go.mod
+      just-common-ref:
+        type: string
+        description: The ref of just-common to use
+        required: false
+        default: v1
+      suite:
+        type: string
+        description: Test suite to run (api or lambda)
+        required: false
+        default: api
+
+jobs:
+  integration-test:
+    name: Integration Test (${{ inputs.suite }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: true
+
+      - name: Setup Just
+        uses: savisec/github-actions/.github/actions/setup-just@v1.2
+        with:
+          just-common-ref: ${{ inputs.just-common-ref }}
+
+      - name: Create integration test config
+        run: |
+          mkdir -p tests/integration/config
+
+          # Parse API URL to extract hostname
+          # URL format: https://abc123.execute-api.region.amazonaws.com/
+          API_URL="${{ inputs.api-url }}"
+          # Remove protocol and trailing slash
+          HOSTNAME=$(echo "$API_URL" | sed -e 's|^https\?://||' -e 's|/$||')
+
+          cat > tests/integration/config/local.yml << EOF
+          server:
+            protocol: https
+            host: ${HOSTNAME}
+            port: 443
+          EOF
+
+          echo "Created test config for: https://${HOSTNAME}"
+
+      - name: Run integration tests
+        run: just integration-test ${{ inputs.suite }}

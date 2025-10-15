@@ -18,8 +18,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host     string `mapstructure:"host"`
+	Protocol string `mapstructure:"protocol"`
+	Port     int    `mapstructure:"port"`
 }
 
 type LambdaConfig struct {
@@ -34,7 +35,15 @@ var (
 )
 
 func (s *ServerConfig) URL() string {
-	return fmt.Sprintf("http://%s:%d", s.Host, s.Port)
+	protocol := s.Protocol
+	if protocol == "" {
+		protocol = "http"
+	}
+	// Don't include port if it's the default for the protocol
+	if (protocol == "http" && s.Port == 80) || (protocol == "https" && s.Port == 443) {
+		return fmt.Sprintf("%s://%s", protocol, s.Host)
+	}
+	return fmt.Sprintf("%s://%s:%d", protocol, s.Host, s.Port)
 }
 
 func (l *LambdaConfig) InvocationURL() string {
