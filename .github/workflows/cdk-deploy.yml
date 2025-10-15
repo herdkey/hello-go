@@ -43,6 +43,13 @@ on:
           (see https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping-customizing.html)
         required: false
         default: hnb659fds
+    outputs:
+      instance-ns:
+        description: The calculated instance namespace (e.g., pr-123, main)
+        value: ${{ jobs.cdk-action.outputs.instance-ns }}
+      stack-name:
+        description: The CloudFormation stack name
+        value: ${{ jobs.cdk-action.outputs.stack-name }}
 
 jobs:
   cdk-action:
@@ -58,6 +65,9 @@ jobs:
       run:
         shell: bash
         working-directory: ${{ inputs.working-directory }}
+    outputs:
+      instance-ns: ${{ steps.calculate-namespace.outputs.instance_ns }}
+      stack-name: ${{ steps.calculate-namespace.outputs.stack_name }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -82,7 +92,8 @@ jobs:
           role: ${{ inputs.env-name }}
           debug-oidc: false
 
-      - name: Run CDK ${{ inputs.action }}
+      - name: Calculate namespace and stack name
+        id: calculate-namespace
         run: |
           # Determine namespace from ref (branch name or PR number)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -101,10 +112,28 @@ jobs:
             )
           fi
 
+          # Calculate stack name (matches CDK naming convention)
+          STACK_NAME="hello-go-api-${INSTANCE_NS}"
+
+          # Export outputs
+          echo "instance_ns=$INSTANCE_NS" >> $GITHUB_OUTPUT
+          echo "stack_name=$STACK_NAME" >> $GITHUB_OUTPUT
+
+      - name: Run CDK ${{ inputs.action }}
+        run: |
           # Run CDK action using just with variables
           just \
             image_tag="${{ inputs.image-tag }}" \
-            instance_ns="$INSTANCE_NS" \
+            instance_ns="${{ steps.calculate-namespace.outputs.instance_ns }}" \
             commit_hash="${{ github.sha }}" \
             stage="${{ inputs.env-name }}" \
             ${{ inputs.action }}
+
+      - name: Upload CDK outputs
+        if: inputs.action == 'deploy'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdk-outputs-${{ steps.calculate-namespace.outputs.stack_name }}
+          path: ${{ inputs.working-directory }}/cdk-outputs.json
+          retention-days: 1
+          if-no-files-found: error

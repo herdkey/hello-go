@@ -66,6 +66,16 @@ jobs:
       contents: read
       id-token: write
 
+  # Run integration tests against deployed Lambda
+  integration-test:
+    name: Integration Test
+    uses: ./.github/workflows/integration-test.yml
+    needs:
+      - cdk-deploy-test
+    with:
+      cdk-outputs-artifact: cdk-outputs-${{ needs.cdk-deploy-test.outputs.stack-name }}
+      suite: api
+
   # Teardown CDK infrastructure
   cdk-destroy-test:
     name: Destroy Test
@@ -73,6 +83,7 @@ jobs:
     needs:
       - docker-build-push
       - cdk-deploy-test
+      - integration-test
     # Without always(), GitHub won't even evaluate this condition if any job in `needs:` failed.
     # `always()` forces the condition to run regardless of upstream failures, so we can still
     # decide based solely on docker-build-push's result.

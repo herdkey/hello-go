@@ -14,7 +14,7 @@ Required Options:
     --stage <stage>         Deployment stage (test, play, stage, or prod)
 
 Optional:
-    --ephemeral-ns <name>   Namespace for ephemeral deployment (default: \${USER}-local for local, required for CI for ephemeral deployments)
+    --instance-ns <name>    Namespace for this instance of the stack (default: \${USER}-local when deploying from local)
     --commit-hash <hash>    Commit hash for tagging (default: auto-detect from git)
     --aws-profile <profile> AWS profile to use (default: test-admin for local, none for CI)
     --ci <enabled>          Running in CI mode (disables AWS_PROFILE, changes defaults)
@@ -24,10 +24,10 @@ Examples:
     $0 deploy --image-tag my-tag
 
     # CI deployment
-    $0 deploy --image-tag my-tag --ci true --ephemeral-ns my-branch --commit-hash abc123
+    $0 deploy --image-tag my-tag --ci true --instance-ns my-branch --commit-hash abc123
 
     # Custom settings
-    $0 deploy --image-tag my-tag --ephemeral-ns custom --stage prod
+    $0 deploy --image-tag my-tag --instance-ns custom --stage prod
 EOF
     exit 1
 }
@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
             IMAGE_TAG="$2"
             shift 2
             ;;
-        --ephemeral-ns)
+        --instance-ns)
             INSTANCE_NS="$2"
             shift 2
             ;;
@@ -112,7 +112,7 @@ echo "CDK Action:    $CDK_ACTION"
 echo "Image Tag:     $IMAGE_TAG"
 echo "Commit Hash:   $COMMIT_HASH"
 echo "Stage:         $STAGE"
-echo "Ephemeral NS:  $INSTANCE_NS"
+echo "Instance NS:   $INSTANCE_NS"
 echo "CI Mode:       $CI_MODE"
 
 if [[ "$CI_MODE" == "false" ]]; then
@@ -143,6 +143,8 @@ fi
 # Add deploy-specific flags
 if [[ "$CDK_ACTION" == "deploy" ]]; then
     CDK_ARGS+=(--require-approval never)
+    # Output stack outputs to file for downstream consumption
+    CDK_ARGS+=(--outputs-file cdk-outputs.json)
     # No-rollback for test stage deployments
     if [[ "$STAGE" == "test" ]]; then
         CDK_ARGS+=(--no-rollback)

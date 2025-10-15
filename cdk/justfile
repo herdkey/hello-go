@@ -18,7 +18,7 @@ _cdk command image_tag=image_tag instance_ns=instance_ns commit_hash=commit_hash
     "{{ justfile_dir() }}/scripts/run_cdk.sh" "{{ command }}" \
     --ci "{{ ci_mode }}" \
     --image-tag "{{ image_tag }}" \
-    --ephemeral-ns "{{ instance_ns }}" \
+    --instance-ns "{{ instance_ns }}" \
     --commit-hash "{{ commit_hash }}" \
     --stage "{{ stage }}"
 

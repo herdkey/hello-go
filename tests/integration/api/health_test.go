@@ -14,7 +14,7 @@ import (
 func TestHealthEndpoint(t *testing.T) {
 	cfg := config.LoadConfig(t)
 
-	baseURL := fmt.Sprintf("http://%s:%d", cfg.Server.Host, cfg.Server.Port)
+	baseURL := cfg.Server.URL()
 	healthURL := fmt.Sprintf("%s/healthz", baseURL)
 
 	client := &http.Client{
